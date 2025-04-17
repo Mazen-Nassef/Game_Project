@@ -3,20 +3,11 @@
 
 class Health {
 public:
-    Health(int max = 3) : maxHealth(max), currentHealth(max) {}
+    Health(int max = 3);
 
-    void takeDamage(int amount = 1) {
-        currentHealth -= amount;
-        if (currentHealth < 0) currentHealth = 0;
-    }
-
-    void reset() {
-        currentHealth = maxHealth;
-    }
-
-    int get() const {
-        return currentHealth;
-    }
+    void takeDamage(int amount = 1);
+    void reset();
+    int get() const;
 
 private:
     int maxHealth;
