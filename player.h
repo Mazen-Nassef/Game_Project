@@ -5,6 +5,7 @@
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 #include <QTimer>
+#include <Qset>
 #include "health.h"
 
 class Player : public QObject, public QGraphicsRectItem {
@@ -13,13 +14,14 @@ public:
     Player();
 
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
 
-    // Movement
+
     void moveForward();
     void moveBackward();
     void jump();
+    void performDash();
 
-    // Game Mechanics
     void takeDamage();
     void reset();
 
@@ -29,12 +31,27 @@ private slots:
 private:
     Health health;
     float speed;
+    float maxSpeed;
+    float friction;
+    float gravity;
+    float dashSpeed;
+    int dashDuration;
     int length;
     int width;
     int jumpHeight;
     int yVelocity;
+    float xVelocity;
+    bool canDash;
+
 
     QTimer *gravityTimer;
+
+    QSet<int> keysHeld;
+
+    QTimer *dashTimer = nullptr;
+    bool isDashing = false;
+    float dashX = 0, dashY = 0;
+
 };
 
 #endif // PLAYER_H
