@@ -9,11 +9,27 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    health.cpp \
+    level.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    movingobstacle.cpp \
+    obstacle.cpp \
+    player.cpp \
+    scoresystem.cpp \
+    staticobstacle.cpp \
+    uimanager.cpp
 
 HEADERS += \
-    mainwindow.h
+    health.h \
+    level.h \
+    mainwindow.h \
+    movingobstacle.h \
+    obstacle.h \
+    player.h \
+    scoresystem.h \
+    staticobstacle.h \
+    uimanager.h
 
 FORMS += \
     mainwindow.ui
