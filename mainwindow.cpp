@@ -70,6 +70,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    
+    // Initialize camera position
+    cameraX = player->pos().x() + player->rect().width() / 2;
+    cameraY = scene->sceneRect().height() / 2;
 
     // Set up 60fps timer
     gameTimer = new QTimer(this);
@@ -118,17 +122,32 @@ void MainWindow::updateCamera()
     QRectF viewRect = view->viewport()->rect();
     QRectF sceneRect = view->scene()->sceneRect();
     
-    // Calculate camera position with horizontal following only
+    // Calculate target camera position with horizontal following only
     // Keep vertical position fixed in the middle of the screen
-    qreal viewX = playerCenterX;
-    qreal viewY = sceneRect.height() / 2;
+    qreal targetX = playerCenterX;
+    qreal targetY = sceneRect.height() / 2;
     
     // Add boundaries to prevent camera from showing beyond the scene
-    viewX = qMax(viewRect.width() / 2, viewX);
-    viewX = qMin(viewX, sceneRect.right() - viewRect.width() / 2);
+    targetX = qMax(viewRect.width() / 2, targetX);
+    targetX = qMin(targetX, sceneRect.right() - viewRect.width() / 2);
     
-    // Set the view center
-    view->centerOn(viewX, viewY);
+    // Initialize camera position on first run
+    if (cameraX == 0.0 && cameraY == 0.0) {
+        cameraX = targetX;
+        cameraY = targetY;
+    }
+    
+    // Smooth camera movement using interpolation
+    // This creates a "lerp" effect where the camera follows with a slight delay
+    cameraX += (targetX - cameraX) * cameraSmoothness;
+    cameraY += (targetY - cameraY) * cameraSmoothness;
+    
+    // Round camera position to nearest pixel to prevent subpixel jittering
+    qreal roundedX = qRound(cameraX);
+    qreal roundedY = qRound(cameraY);
+    
+    // Set the view center with the smoothed position
+    view->centerOn(roundedX, roundedY);
     
     // Position UI elements in the top right corner of the viewport
     int rightMargin = 20; // Distance from right edge

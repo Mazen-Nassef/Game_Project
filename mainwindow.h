@@ -60,5 +60,10 @@ private:
     // References to player and view for camera control
     Player* player;
     QGraphicsView* view;
+    
+    // Camera position tracking for smooth movement
+    qreal cameraX = 0.0;
+    qreal cameraY = 0.0;
+    qreal cameraSmoothness = 0.1; // Lower = smoother but slower camera (0.1-0.3 is good)
 };
 #endif // MAINWINDOW_H
