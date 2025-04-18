@@ -22,7 +22,6 @@ public:
     MovingObstacle(int length = 50, int width = 50, int damage = 1, QGraphicsItem* parent = nullptr);
     virtual ~MovingObstacle() override = default;
     void move () override;
-    void collideWithPlayer(Player* Player) override;
     void setMovementPattern(MovementPattern pattern) {this->pattern = pattern;}
     void setPatrolPoints(const QPointF& start, const QPointF& end);
     void setMovementSpeed(float speed);

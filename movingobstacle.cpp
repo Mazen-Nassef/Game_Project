@@ -39,6 +39,7 @@ void MovingObstacle::move()
     updatePosition();
 }
 
+
 void MovingObstacle::updatePosition()
 {
     switch (pattern)
