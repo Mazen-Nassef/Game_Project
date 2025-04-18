@@ -180,3 +180,49 @@ void Player::applyGravity()
         }
     }
 }
+    
+    void Player::takeDamage()
+    {
+    // Call the Health object's takeDamage method
+    health.takeDamage();
+    
+    // Visual indication of damage
+    setBrush(QBrush(Qt::yellow));
+    
+    // Reset to normal color after a short delay
+    QTimer::singleShot(300, this, [this]() {
+        if (!isDashing) {
+            setBrush(QBrush(Qt::red));
+        } else {
+            setBrush(QBrush(Qt::blue));
+        }
+    });
+    
+    // Check if player is still alive
+    if (health.get() <= 0) {
+        // Player has died
+        reset();
+    }
+    }
+    
+    void Player::reset()
+    {
+    // Reset player position
+    setPos(0, 0);
+    
+    // Reset velocities
+    xVelocity = 0;
+    yVelocity = 0;
+    
+    // Reset dash state
+    isDashing = false;
+    canDash = true;
+    dashX = 0;
+    dashY = 0;
+    
+    // Reset color
+    setBrush(QBrush(Qt::red));
+    
+    // Reset health
+    health.reset();
+    }

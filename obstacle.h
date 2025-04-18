@@ -48,11 +48,12 @@ public:
         setRect(0,0, length, width);
         setBrush(color);
     }
-    virtual void collideWithPlayer(Player* Player);
-    int getDamage () const;
-    virtual void takeDamage (int amount);
-    virtual ~Obstacle() override;
-    virtual void move() = 0;
+
+              virtual void collideWithPlayer(Player* player);
+              int getDamage() const;
+              virtual void takeDamage(int amount);
+              virtual ~Obstacle();
+              virtual void move() = 0;
 };
 
 #endif // OBSTACLE_H
