@@ -30,6 +30,7 @@ void Player::keyPressEvent(QKeyEvent *event) {
         moveForward();
         break;
     case Qt::Key_Up:
+        break;
     case Qt::Key_Space:
         // Immediately try to jump (more responsive than waiting for gravity update)
         if (isOnGround || isOnPlatform) {
@@ -202,8 +203,8 @@ void Player::applyGravity()
     bool wasOnPlatform = isOnPlatform;
     
     // Handle jumping with better key detection
-    // Using Key_Space or Key_Up for jumping
-    if ((keysHeld.contains(Qt::Key_Space) || keysHeld.contains(Qt::Key_Up)) && 
+    // Using Key_Space for jumping
+    if ((keysHeld.contains(Qt::Key_Space)) &&
         (isOnGround || isOnPlatform)) {
         // Jump only if we're on a solid surface
         jump();
