@@ -74,11 +74,6 @@ MainWindow::MainWindow(QWidget *parent)
         score += 1;
         uiManager->updateScore(score);
 
-        // Decrease health every frame (if needed), for example:
-        if (time > 5) {  // Health takes damage after 5 seconds as an example
-            health->takeDamage(1);
-        }
-        uiManager->updateHealth(health->get());  // Use Health's currentHealth
 
         update();  // Trigger the paintEvent to refresh the display
     });
