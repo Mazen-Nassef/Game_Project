@@ -40,8 +40,8 @@ Obstacle::~Obstacle()
 
 void Obstacle::collideWithPlayer(Player* player)
 {
-    if (player) {
-        player->takeDamage();
+    if (player && damage > 0) {
+        player->takeDamage(damage);
     }
 }
 

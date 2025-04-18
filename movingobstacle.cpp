@@ -18,7 +18,7 @@ MovingObstacle::MovingObstacle(int length, int width, int damage, QGraphicsItem*
 void MovingObstacle::collideWithPlayer(Player* player)
 {
     if (player && getDamage() > 0) {
-        player->takeDamage();
+        player->takeDamage(getDamage());
     }
     
     // Moving obstacles can also push the player in their movement direction

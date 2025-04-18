@@ -29,7 +29,7 @@ void StaticObstacle::collideWithPlayer(Player* player)
 {
     // Only apply damage if the obstacle is damaging
     if (getDamage() > 0) {
-        player->takeDamage();
+        player->takeDamage(getDamage());
     }
     
     // If the obstacle is bouncy, the bounce is handled in the player's collision detection

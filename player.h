@@ -24,7 +24,7 @@ public:
     void jump();
     void performDash();
 
-    void takeDamage();
+    void takeDamage(int amount = 1);
     void reset();
 
 private slots:

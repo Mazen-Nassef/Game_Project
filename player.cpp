@@ -163,8 +163,11 @@ bool Player::checkPlatformCollisions() {
                     isOnObstacle = false; // We're bouncing, not standing
                 }
                 
-                // Trigger the obstacle's collision response
-                obstacle->collideWithPlayer(this);
+                // Only call collideWithPlayer when we want to apply damage effects
+                // For top collisions with obstacles without damage, we don't need to trigger damage
+                if (obstacle->getDamage() > 0) {
+                    obstacle->collideWithPlayer(this);
+                }
             }
             // Check for side collisions with obstacles
             else if (playerRect.right() > obstacleRect.left() && 
@@ -344,10 +347,10 @@ void Player::applyGravity()
     //          << "canJump:" << (isOnGround || isOnPlatform) << "yVel:" << yVelocity;
 }
     
-void Player::takeDamage()
+void Player::takeDamage(int amount)
 {
-    // Call the Health object's takeDamage method
-    health.takeDamage();
+    // Call the Health object's takeDamage method with the specified amount
+    health.takeDamage(amount);
     
     // Visual indication of damage
     setBrush(QBrush(Qt::yellow));
