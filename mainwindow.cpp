@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "staticobstacle.h"
+#include "movingobstacle.h"
 #include "ui_mainwindow.h"
 #include "player.h"
 #include "uimanager.h"
@@ -70,7 +72,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    
+    // Create a new static obstacle (width, height, damage)
+    StaticObstacle* obstacle1 = new StaticObstacle(100, 50, 1);
+    obstacle1->setIsBouncy(true);
+    obstacle1->setBounceStrength(0.5f);
+    obstacle1->setPlayerFriction(0.8f);
+    obstacle1->setPos(200, 400);// x, y coordinates in the scene
+    scene->addItem(obstacle1);
+    StaticObstacle* obstacle2 = new StaticObstacle(100, 50, 1);
+    obstacle2->setIsBouncy(true);
+    obstacle2->setBounceStrength(0.5f);
+    obstacle2->setPlayerFriction(0.8f);
+    obstacle2->setPos(600, 400);// x, y coordinates in the scene
+    scene->addItem(obstacle2);
     // Initialize camera position
     cameraX = player->pos().x() + player->rect().width() / 2;
     cameraY = scene->sceneRect().height() / 2;
