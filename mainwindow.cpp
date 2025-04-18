@@ -57,8 +57,27 @@ MainWindow::MainWindow(QWidget *parent)
     QGraphicsScene* scene = new QGraphicsScene(this);
     scene->setSceneRect(0, 0, 2000, 600); // Extended scene width for scrolling
 
+    // Add platforms to the scene
+    // Main floor platform (solid)
+    Platform* floor = new Platform(0, 500, 2000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(floor);
+    
+    // Add some floating platforms (passthrough)
+    Platform* platform1 = new Platform(200, 400, 200, 20);
+    Platform* platform2 = new Platform(500, 350, 200, 20);
+    Platform* platform3 = new Platform(800, 300, 200, 20);
+    Platform* platform4 = new Platform(1100, 250, 200, 20);
+    Platform* platform5 = new Platform(1400, 300, 200, 20);
+    
+    scene->addItem(platform1);
+    scene->addItem(platform2);
+    scene->addItem(platform3);
+    scene->addItem(platform4);
+    scene->addItem(platform5);
+    
     // Create the player object and store reference
     player = new Player();
+    player->setPos(100, 400); // Start the player above the floor
     scene->addItem(player);
 
     // Create the view and set the scene
