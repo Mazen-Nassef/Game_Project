@@ -7,8 +7,11 @@
 #include <QPainter>
 #include "player.h"
 #include "uimanager.h"
+#include "health.h"
 #include <QTimer>
 #include <QTime>
+#include <QLabel>
+#include "uimanager.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -39,12 +42,17 @@ private:
     Ui::MainWindow *ui;
     UIManager* uiManager;
     int score;
-    int health;
+    Health* health;;
     double time;
     QTimer* timer;
      QString currentMessage;
 
     QTimer* gameTimer;
     QTime startTime;
+
+    QLabel *scoreLabel;
+    QLabel *healthLabel;
+    QLabel *timeLabel;
+
 };
 #endif // MAINWINDOW_H
