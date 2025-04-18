@@ -1,48 +1,61 @@
 #include "obstacle.h"
 #include "player.h"
 
-// Constructor implementation
-Obstacle::Obstacle(QGraphicsItem *parent) : QObject(),
-    QGraphicsRectItem(parent)
+Obstacle::Obstacle(QGraphicsItem *parent)
+    : QObject(), QGraphicsRectItem(parent),
+    length(50), width(50), damage(1), isLethal(true),
+    isBreakable(false), breakHitpoints(0),
+    color(Qt::gray), hasEffect(false),
+    effectType(0), effectDuration(0)
 {
     setRect(0, 0, length, width);
-    setBrush(color);
+    setBrush(QBrush(color));
 }
 
-// Destructor implementation
+Obstacle::Obstacle(int length_,
+                   int width_,
+                   int damage_,
+                   bool lethal,
+                   bool breakable,
+                   int breakHP,
+                   QColor col,
+                   bool effect,
+                   int effType,
+                   int effDuration,
+                   QGraphicsItem* parent)
+    : QObject(), QGraphicsRectItem(parent),
+    length(length_), width(width_), damage(damage_),
+    isLethal(lethal), isBreakable(breakable), breakHitpoints(breakHP),
+    color(col), hasEffect(effect), effectType(effType),
+    effectDuration(effDuration)
+{
+    setRect(0, 0, length, width);
+    setBrush(QBrush(color));
+}
+
 Obstacle::~Obstacle()
 {
-    // Default destructor
+    // Destructor body
 }
 
-// Implementation of collideWithPlayer
 void Obstacle::collideWithPlayer(Player* player)
 {
-    // Default implementation - can be overridden by derived classes
     if (player) {
         player->takeDamage();
     }
 }
 
-// Implementation of getDamage
 int Obstacle::getDamage() const
 {
     return damage;
 }
 
-// Implementation of takeDamage
 void Obstacle::takeDamage(int amount)
 {
-    // Default implementation - can be overridden by derived classes
     if (isBreakable) {
         breakHitpoints -= amount;
-        
-        // If hitpoints drop to or below 0, the obstacle is destroyed
         if (breakHitpoints <= 0) {
-            // Code to destroy the obstacle
-            // This will depend on your game's implementation
-            // For now, we can hide it
-            hide();
+            hide(); // Placeholder logic for destroying the obstacle
         }
     }
 }
