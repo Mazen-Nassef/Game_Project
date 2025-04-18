@@ -3,6 +3,7 @@
 #include "qvectornd.h"
 #include <QGraphicsScene>
 #include <QtMath> // for qCos, qSin
+#include "player.h" // Add include for Player
 
 MovingObstacle::MovingObstacle(int length, int width, int damage, QGraphicsItem* parent)
     : Obstacle(length, width, damage, true, false, 0, Qt::gray, false, 0, 0, parent)
@@ -12,6 +13,16 @@ MovingObstacle::MovingObstacle(int length, int width, int damage, QGraphicsItem*
     moveTimer = new QTimer(this);
     connect(moveTimer, &QTimer::timeout, this, &MovingObstacle::updatePosition);
     moveTimer->start(16); // ~60 updates per second
+}
+
+void MovingObstacle::collideWithPlayer(Player* player)
+{
+    if (player && getDamage() > 0) {
+        player->takeDamage();
+    }
+    
+    // Moving obstacles can also push the player in their movement direction
+    // This would require more complex handling and is optional for basic functionality
 }
 
 

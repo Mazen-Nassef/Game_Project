@@ -1,4 +1,5 @@
 #include "staticobstacle.h"
+#include "player.h"
 #include <QBrush>
 #include <QGraphicsScene>
 
@@ -26,8 +27,15 @@ void StaticObstacle::move()
 
 void StaticObstacle::collideWithPlayer(Player* player)
 {
-    Q_UNUSED(player);
-    // Do nothing for now
+    // Only apply damage if the obstacle is damaging
+    if (getDamage() > 0) {
+        player->takeDamage();
+    }
+    
+    // If the obstacle is bouncy, the bounce is handled in the player's collision detection
+    
+    // If the obstacle is pushable, we could add push logic here
+    // For now, we're handling this purely for collision detection
 }
 
 bool StaticObstacle::getIsBouncy() const

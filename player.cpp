@@ -70,6 +70,9 @@ void Player::jump() {
 
 #include "platform.h" // Add the include at the top of the file
 
+#include "obstacle.h"
+#include "staticobstacle.h"
+
 bool Player::checkPlatformCollisions() {
     if (!scene()) {
         return false;
@@ -81,12 +84,14 @@ bool Player::checkPlatformCollisions() {
     // Reset platform status by default - we'll set it if we find we're on a platform
     isOnPlatform = false;
     currentPlatform = nullptr;
+    bool isOnObstacle = false;
     
     // First check: Are we directly landing on a platform from above?
     qreal feetY = y() + rect().height();
     qreal smallGap = 5.0; // Small gap to detect "about to land" or "just left" platform
     
     for (QGraphicsItem* item : collidingItems) {
+        // Check for platforms first
         Platform* platform = dynamic_cast<Platform*>(item);
         if (platform) {
             QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
@@ -106,7 +111,6 @@ bool Player::checkPlatformCollisions() {
                 yVelocity = 0;
                 isOnPlatform = true;
                 currentPlatform = platform;
-                return true;
             }
             
             // Check for side collisions with solid platforms
@@ -137,9 +141,68 @@ bool Player::checkPlatformCollisions() {
                 }
             }
         }
+        
+        // Now check for obstacles
+        Obstacle* obstacle = dynamic_cast<Obstacle*>(item);
+        if (obstacle) {
+            QRectF obstacleRect = obstacle->mapToScene(obstacle->rect()).boundingRect();
+            QRectF playerRect = mapToScene(rect()).boundingRect();
+            
+            // Check if player is directly above obstacle (standing on it)
+            if (feetY >= obstacleRect.top() - smallGap && feetY <= obstacleRect.top() + smallGap) {
+                // Place player on top of obstacle and stop falling
+                setY(obstacleRect.top() - rect().height());
+                yVelocity = 0;
+                isOnObstacle = true;
+                
+                // Check if this is a bouncy obstacle
+                StaticObstacle* staticObstacle = dynamic_cast<StaticObstacle*>(obstacle);
+                if (staticObstacle && staticObstacle->getIsBouncy()) {
+                    // Apply bounce - negative velocity with bounce strength
+                    yVelocity = -jumpHeight * staticObstacle->getBounceStrength();
+                    isOnObstacle = false; // We're bouncing, not standing
+                }
+                
+                // Trigger the obstacle's collision response
+                obstacle->collideWithPlayer(this);
+            }
+            // Check for side collisions with obstacles
+            else if (playerRect.right() > obstacleRect.left() && 
+                     playerRect.left() < obstacleRect.right() &&
+                     playerRect.bottom() > obstacleRect.top() + smallGap && 
+                     playerRect.top() < obstacleRect.bottom()) {
+                
+                // Determine if collision is from left or right
+                if (playerRect.right() - obstacleRect.left() < 10) {
+                    // Player hit obstacle from the left
+                    setX(obstacleRect.left() - rect().width());
+                    xVelocity = 0;
+                    
+                    // Trigger the obstacle's collision response
+                    obstacle->collideWithPlayer(this);
+                }
+                else if (obstacleRect.right() - playerRect.left() < 10) {
+                    // Player hit obstacle from the right
+                    setX(obstacleRect.right());
+                    xVelocity = 0;
+                    
+                    // Trigger the obstacle's collision response
+                    obstacle->collideWithPlayer(this);
+                }
+                else if (yVelocity < 0 && playerRect.top() < obstacleRect.bottom() && 
+                         playerRect.top() > obstacleRect.top()) {
+                    // Player is hitting obstacle from below
+                    setY(obstacleRect.bottom());
+                    yVelocity = 0;
+                    
+                    // Trigger the obstacle's collision response
+                    obstacle->collideWithPlayer(this);
+                }
+            }
+        }
     }
     
-    return isOnPlatform;
+    return isOnPlatform || isOnObstacle;
 }
 
 bool Player::canDropThroughPlatform() {
@@ -236,13 +299,14 @@ void Player::applyGravity()
     }
     
     // Only check platform collisions if we're not on ground
+    bool onSolidSurface = isOnGround;
     if (!isOnGround) {
-        checkPlatformCollisions();
+        onSolidSurface = checkPlatformCollisions();
     }
     
-    // Reset dash ability when landing on ground or platform
+    // Reset dash ability when landing on any solid surface
     bool justLanded = (isOnGround && !wasOnGround) || (isOnPlatform && !wasOnPlatform);
-    if ((isOnGround || isOnPlatform) && !canDash && !isDashing) {
+    if (onSolidSurface && !canDash && !isDashing) {
         canDash = true;
         setBrush(QBrush(Qt::red));
     }

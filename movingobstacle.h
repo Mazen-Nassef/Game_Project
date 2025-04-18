@@ -27,7 +27,7 @@ public:
    // virtual ~MovingObstacle() override;
 
     void move() override;
-  //  void collideWithPlayer(Player* player) override;
+    void collideWithPlayer(Player* player) override;
 
     void setMovementPattern(MovementPattern pattern);
     void setPatrolPoints(const QPointF& start, const QPointF& end);
