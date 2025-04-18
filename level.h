@@ -1,8 +1,12 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-class Level
-{
+#include <QGraphicsScene>
+#include <QGraphicsRectItem>
+#include <QGraphicsPixmapItem>
+#include "player.h"
+
+class Level {
 private:
     int current_level;
     double frequency_multiplier;
@@ -12,6 +16,10 @@ private:
     void set_frequencyM();
     void set_velocityM();
     void set_damageM();
+
+    QList<QGraphicsRectItem*> platforms;
+    QGraphicsPixmapItem* goal;
+
 public:
     Level();
     int get_level() const;
@@ -20,6 +28,8 @@ public:
     double get_damageM() const;
     void update_level();
 
+    void setupLevel(QGraphicsScene* scene);
+    void followPlayer(QGraphicsView* view, Player* player);
 };
 
 #endif // LEVEL_H
