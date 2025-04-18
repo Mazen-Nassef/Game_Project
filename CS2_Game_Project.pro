@@ -15,6 +15,7 @@ SOURCES += \
     mainwindow.cpp \
     movingobstacle.cpp \
     obstacle.cpp \
+    platform.cpp \
     player.cpp \
     scoresystem.cpp \
     staticobstacle.cpp \
@@ -26,6 +27,7 @@ HEADERS += \
     mainwindow.h \
     movingobstacle.h \
     obstacle.h \
+    platform.h \
     player.h \
     scoresystem.h \
     staticobstacle.h \

@@ -1,10 +1,12 @@
 #include <QBrush>
+#include <QList>
 #include "player.h"
+#include "qgraphicsscene.h"
 
 
 Player::Player()
     : health(3), speed(1), maxSpeed(5), friction(0.5), gravity(1), dashSpeed(10), dashDuration(150), length(50), width(30), jumpHeight(15),
-    yVelocity(0), xVelocity(0), canDash(true), gravityTimer(new QTimer(this))
+    yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), floorY(500), gravityTimer(new QTimer(this))
     // player stats, we can tweek until it feels right
 {
     setRect(0, 0, width, length);
@@ -28,9 +30,15 @@ void Player::keyPressEvent(QKeyEvent *event) {
         moveForward();
         break;
     case Qt::Key_Up:
-    case Qt::Key_Down:
         break;
     case Qt::Key_Space:
+        // Immediately try to jump (more responsive than waiting for gravity update)
+        if (isOnGround || isOnPlatform) {
+            jump();
+        }
+        break;
+    case Qt::Key_Down:
+        // Handle dropping through platforms in the physics update
         break;
     case Qt::Key_M:
         performDash();
@@ -53,12 +61,90 @@ void Player::moveBackward() {
 } //holding back decreases players velocity by the magnitute of the speed value (negative for left)
 
 void Player::jump() {
-    if (y() >= 500)
-    // 500 is the arbitrary value i chose for the floor so i can test the player
-    // this will need to be updated based on the level logic
-    {
-        yVelocity = -jumpHeight;
-    } // increments player's vertical velocity by the jump height value (negative for up)
+    // Simple jump implementation - just set upward velocity
+    yVelocity = -jumpHeight;
+    isOnGround = false;
+    isOnPlatform = false;
+    currentPlatform = nullptr;
+}
+
+#include "platform.h" // Add the include at the top of the file
+
+bool Player::checkPlatformCollisions() {
+    if (!scene()) {
+        return false;
+    }
+    
+    // Get all colliding items
+    QList<QGraphicsItem*> collidingItems = scene()->collidingItems(this);
+    
+    // Reset platform status by default - we'll set it if we find we're on a platform
+    isOnPlatform = false;
+    currentPlatform = nullptr;
+    
+    // First check: Are we directly landing on a platform from above?
+    qreal feetY = y() + rect().height();
+    qreal smallGap = 5.0; // Small gap to detect "about to land" or "just left" platform
+    
+    for (QGraphicsItem* item : collidingItems) {
+        Platform* platform = dynamic_cast<Platform*>(item);
+        if (platform) {
+            QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
+            
+            // Check if player is directly above platform
+            if (feetY >= platformRect.top() - smallGap && feetY <= platformRect.top() + smallGap) {
+                // Player is directly on top of platform
+                
+                // For passthrough platforms, allow dropping if down key is pressed
+                if (platform->isPassthrough() && keysHeld.contains(Qt::Key_Down)) {
+                    // Allow player to drop through
+                    continue;
+                }
+                
+                // Otherwise, place player on top of platform and stop falling
+                setY(platformRect.top() - rect().height());
+                yVelocity = 0;
+                isOnPlatform = true;
+                currentPlatform = platform;
+                return true;
+            }
+            
+            // Check for side collisions with solid platforms
+            if (platform->isSolid()) {
+                QRectF playerRect = mapToScene(rect()).boundingRect();
+                
+                // If player collides with platform sides
+                if (playerRect.right() > platformRect.left() && playerRect.left() < platformRect.right() &&
+                    playerRect.bottom() > platformRect.top() + smallGap && playerRect.top() < platformRect.bottom()) {
+                    
+                    // Determine if collision is from left or right
+                    if (playerRect.right() - platformRect.left() < 10) {
+                        // Player hit platform from the left
+                        setX(platformRect.left() - rect().width());
+                        xVelocity = 0;
+                    }
+                    else if (platformRect.right() - playerRect.left() < 10) {
+                        // Player hit platform from the right
+                        setX(platformRect.right());
+                        xVelocity = 0;
+                    }
+                    else if (yVelocity < 0 && playerRect.top() < platformRect.bottom() && 
+                             playerRect.top() > platformRect.top()) {
+                        // Player is hitting platform ceiling
+                        setY(platformRect.bottom());
+                        yVelocity = 0;
+                    }
+                }
+            }
+        }
+    }
+    
+    return isOnPlatform;
+}
+
+bool Player::canDropThroughPlatform() {
+    // Can drop through if pressing down
+    return keysHeld.contains(Qt::Key_Down);
 }
 
 void Player::performDash()
@@ -112,77 +198,90 @@ void Player::applyGravity()
 // i turned this more into "apply physics" than "apply gravity", but i can't be bothered to change the name
 // the important thing is that it handles all movement now, not just vertical movement
 {
-
-    if (keysHeld.contains(Qt::Key_Space) && y() >= 500) {
+    // Store previous states
+    bool wasOnGround = isOnGround;
+    bool wasOnPlatform = isOnPlatform;
+    
+    // Handle jumping with better key detection
+    // Using Key_Space for jumping
+    if ((keysHeld.contains(Qt::Key_Space)) &&
+        (isOnGround || isOnPlatform)) {
+        // Jump only if we're on a solid surface
         jump();
-        // jumps if you're holding space and are on the floor, need to update the 500 bit when moaz does the level logic
     }
+    
+    // Apply gravity if not dashing
     if (!isDashing) {
         yVelocity += gravity;
-        // applies gravity while not dashing
     }
 
-
+    // Handle left/right movement
     if (keysHeld.contains(Qt::Key_Left)) {
         moveBackward();
-        //moves backward if holding backward
     }
     if (keysHeld.contains(Qt::Key_Right)) {
         moveForward();
-        //moves forward if holding forward
     }
 
-
+    // Update position
     setX(x() + xVelocity + dashX);
     setY(y() + yVelocity + dashY);
-    // dash logic
-
-
-    if (y() >= 500) {
-        setY(500);
+    
+    // Handle floor collision first (simpler)
+    isOnGround = false;
+    if (y() >= floorY) {
+        setY(floorY);
         yVelocity = 0;
-        //prevents player from falling through the floor, needs to be updated with level logic
-        if (!canDash && !isDashing) {
-            canDash = true;
-            setBrush(QBrush(Qt::red));
-        }
-        // resets dash
+        isOnGround = true;
+    }
+    
+    // Only check platform collisions if we're not on ground
+    if (!isOnGround) {
+        checkPlatformCollisions();
+    }
+    
+    // Reset dash ability when landing on ground or platform
+    bool justLanded = (isOnGround && !wasOnGround) || (isOnPlatform && !wasOnPlatform);
+    if ((isOnGround || isOnPlatform) && !canDash && !isDashing) {
+        canDash = true;
+        setBrush(QBrush(Qt::red));
+    }
+    
+    // Stop dashing when landing
+    if (justLanded && isDashing) {
         isDashing = false;
-        dashX = 0; dashY = 0;
-        //stops dashing
-
+        dashX = 0;
+        dashY = 0;
+        
         if (dashTimer && dashTimer->isActive()) {
             dashTimer->stop();
         }
-        // chatgpt, i can't figure out timers
     }
 
-
+    // Apply friction if not dashing
     if (!isDashing) {
         float currentFriction = friction;
 
         if (std::abs(xVelocity) > maxSpeed) {
             currentFriction += (std::abs(xVelocity) - maxSpeed) * 0.2;
-        } // if player velocity is higher than the max speed, the friction increases to force them gradually back to the max speed
+        }
 
         if (xVelocity > 0) {
             xVelocity -= currentFriction;
-            //applies friction to slow down the player
             if (xVelocity < 0) xVelocity = 0;
-            // stops at 0
         } else if (xVelocity < 0) {
             xVelocity += currentFriction;
-            //same but in the negative direction
             if (xVelocity > 0) xVelocity = 0;
-            // stops at zero
-
-            // could probably combine this with a few absolute functions, but i'm tired rn, i'll do that later
         }
     }
+    
+    // Debug info - can be removed after fixing
+    // qDebug() << "isOnGround:" << isOnGround << "isOnPlatform:" << isOnPlatform
+    //          << "canJump:" << (isOnGround || isOnPlatform) << "yVel:" << yVelocity;
 }
     
-    void Player::takeDamage()
-    {
+void Player::takeDamage()
+{
     // Call the Health object's takeDamage method
     health.takeDamage();
     
@@ -203,10 +302,10 @@ void Player::applyGravity()
         // Player has died
         reset();
     }
-    }
+}
     
-    void Player::reset()
-    {
+void Player::reset()
+{
     // Reset player position
     setPos(0, 0);
     
@@ -220,9 +319,14 @@ void Player::applyGravity()
     dashX = 0;
     dashY = 0;
     
+    // Reset platform state
+    isOnGround = false;
+    isOnPlatform = false;
+    currentPlatform = nullptr;
+    
     // Reset color
     setBrush(QBrush(Qt::red));
     
     // Reset health
     health.reset();
-    }
+}

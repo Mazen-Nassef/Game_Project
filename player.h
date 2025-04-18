@@ -6,7 +6,9 @@
 #include <QKeyEvent>
 #include <QTimer>
 #include <Qset>
+#include <QDebug>
 #include "health.h"
+#include "platform.h"
 
 class Player : public QObject, public QGraphicsRectItem {
     Q_OBJECT
@@ -29,6 +31,11 @@ private slots:
     void applyGravity();
 
 private:
+    // Check for platform collisions and handle them
+    bool checkPlatformCollisions();
+    // Check if the player can drop through the current platform
+    bool canDropThroughPlatform();
+    
     Health health;
     float speed;
     float maxSpeed;
@@ -42,6 +49,10 @@ private:
     int yVelocity;
     float xVelocity;
     bool canDash;
+    bool isOnGround;
+    bool isOnPlatform;
+    Platform* currentPlatform;
+    qreal floorY; // Y coordinate of the floor
 
 
     QTimer *gravityTimer;
