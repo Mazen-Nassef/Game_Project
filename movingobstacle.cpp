@@ -1,17 +1,19 @@
 #include "movingobstacle.h"
+#include "obstacle.h"
 #include "qvectornd.h"
 #include <QGraphicsScene>
 #include <QtMath> // for qCos, qSin
 
 MovingObstacle::MovingObstacle(int length, int width, int damage, QGraphicsItem* parent)
-    : Obstacle(length, width, damage, parent)
+    : Obstacle(length, width, damage, true, false, 0, Qt::gray, false, 0, 0, parent)
 {
     startPosition = pos(); // Default starting point is current position
 
     moveTimer = new QTimer(this);
     connect(moveTimer, &QTimer::timeout, this, &MovingObstacle::updatePosition);
-    moveTimer->start(16); // Roughly ~60 updates per second
+    moveTimer->start(16); // ~60 updates per second
 }
+
 
 void MovingObstacle::setPatrolPoints(const QPointF& start, const QPointF& end)
 {
