@@ -17,10 +17,18 @@ MainWindow::MainWindow(QWidget *parent)
     healthLabel = new QLabel(this);
     timeLabel = new QLabel(this);
 
-    scoreLabel->setStyleSheet("color: black; font: bold 16px;");
-    healthLabel->setStyleSheet("color: black; font: bold 16px;");
-    timeLabel->setStyleSheet("color: black; font: bold 16px;");
-
+    // Set labels with right alignment and make them stand out against any background
+    QString styleSheet = "color: black; font: bold 16px; background-color: rgba(255, 255, 255, 150); padding: 2px 5px; border-radius: 3px;";
+    scoreLabel->setStyleSheet(styleSheet);
+    healthLabel->setStyleSheet(styleSheet);
+    timeLabel->setStyleSheet(styleSheet);
+    
+    // Align text to the right within each label
+    scoreLabel->setAlignment(Qt::AlignRight);
+    healthLabel->setAlignment(Qt::AlignRight);
+    timeLabel->setAlignment(Qt::AlignRight);
+    
+    // Set initial position (will be updated in updateCamera)
     scoreLabel->move(10, 10);
     healthLabel->move(10, 40);
     timeLabel->move(10, 70);
@@ -47,14 +55,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Create the scene
     QGraphicsScene* scene = new QGraphicsScene(this);
-    scene->setSceneRect(0, 0, 800, 600);
+    scene->setSceneRect(0, 0, 2000, 600); // Extended scene width for scrolling
 
-    // Create the player object
-    Player* player = new Player();
+    // Create the player object and store reference
+    player = new Player();
     scene->addItem(player);
 
     // Create the view and set the scene
-    QGraphicsView* view = ui->graphicsView;
+    view = ui->graphicsView;
     view->setScene(scene);
 
     view->setRenderHint(QPainter::Antialiasing);
@@ -74,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
         score += 1;
         uiManager->updateScore(score);
 
+        // Update camera to follow player
+        updateCamera();
 
         update();  // Trigger the paintEvent to refresh the display
     });
@@ -92,4 +102,49 @@ void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     // Optionally, you can perform custom rendering here
+}
+
+void MainWindow::updateCamera()
+{
+    if (!player)
+        return;
+        
+    // Get player's center position
+    QPointF playerPos = player->pos();
+    qreal playerCenterX = playerPos.x() + player->rect().width() / 2;
+    qreal playerCenterY = playerPos.y() + player->rect().height() / 2;
+    
+    // Get view dimensions
+    QRectF viewRect = view->viewport()->rect();
+    QRectF sceneRect = view->scene()->sceneRect();
+    
+    // Calculate camera position with horizontal following only
+    // Keep vertical position fixed in the middle of the screen
+    qreal viewX = playerCenterX;
+    qreal viewY = sceneRect.height() / 2;
+    
+    // Add boundaries to prevent camera from showing beyond the scene
+    viewX = qMax(viewRect.width() / 2, viewX);
+    viewX = qMin(viewX, sceneRect.right() - viewRect.width() / 2);
+    
+    // Set the view center
+    view->centerOn(viewX, viewY);
+    
+    // Position UI elements in the top right corner of the viewport
+    int rightMargin = 20; // Distance from right edge
+    int topMargin = 10;   // Distance from top edge
+    int labelSpacing = 30; // Vertical space between labels
+    
+    // Calculate right-aligned positions based on viewport width
+    int viewportWidth = view->viewport()->width();
+    
+    // Position labels in top-right corner with right alignment
+    scoreLabel->move(viewportWidth - scoreLabel->width() - rightMargin, topMargin);
+    healthLabel->move(viewportWidth - healthLabel->width() - rightMargin, topMargin + labelSpacing);
+    timeLabel->move(viewportWidth - timeLabel->width() - rightMargin, topMargin + labelSpacing * 2);
+    
+    // Make sure UI is always on top
+    scoreLabel->raise();
+    healthLabel->raise();
+    timeLabel->raise();
 }

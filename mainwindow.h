@@ -39,6 +39,9 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
+    // Camera method to update view position
+    void updateCamera();
+    
     Ui::MainWindow *ui;
     UIManager* uiManager;
     int score;
@@ -53,6 +56,9 @@ private:
     QLabel *scoreLabel;
     QLabel *healthLabel;
     QLabel *timeLabel;
-
+    
+    // References to player and view for camera control
+    Player* player;
+    QGraphicsView* view;
 };
 #endif // MAINWINDOW_H
