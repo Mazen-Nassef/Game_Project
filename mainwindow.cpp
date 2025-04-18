@@ -91,19 +91,41 @@ MainWindow::MainWindow(QWidget *parent)
 
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    // Create a new static obstacle (width, height, damage)
-    StaticObstacle* obstacle1 = new StaticObstacle(100, 50, 1);
-    obstacle1->setIsBouncy(true);
-    obstacle1->setBounceStrength(0.5f);
-    obstacle1->setPlayerFriction(0.8f);
-    obstacle1->setPos(200, 400);// x, y coordinates in the scene
-    scene->addItem(obstacle1);
-    StaticObstacle* obstacle2 = new StaticObstacle(100, 50, 1);
-    obstacle2->setIsBouncy(true);
-    obstacle2->setBounceStrength(0.5f);
-    obstacle2->setPlayerFriction(0.8f);
-    obstacle2->setPos(600, 400);// x, y coordinates in the scene
-    scene->addItem(obstacle2);
+    
+    // Create two purple obstacles with damage=1 (not bouncy)
+    StaticObstacle* purpleObstacle1 = new StaticObstacle(100, 50, 1);
+    purpleObstacle1->setIsBouncy(false);
+    purpleObstacle1->setBounceStrength(0.0f);
+    purpleObstacle1->setPlayerFriction(1.0f);
+    purpleObstacle1->setBrush(QBrush(Qt::magenta)); // Purple color
+    purpleObstacle1->setPos(300, 400); // x, y coordinates in the scene
+    scene->addItem(purpleObstacle1);
+    
+    StaticObstacle* purpleObstacle2 = new StaticObstacle(100, 50, 1);
+    purpleObstacle2->setIsBouncy(false);
+    purpleObstacle2->setBounceStrength(0.0f);
+    purpleObstacle2->setPlayerFriction(1.0f);
+    purpleObstacle2->setBrush(QBrush(Qt::magenta)); // Purple color
+    purpleObstacle2->setPos(700, 400); // x, y coordinates in the scene
+    scene->addItem(purpleObstacle2);
+    
+    // Create two blue obstacles with damage=0 (very bouncy)
+    StaticObstacle* blueObstacle1 = new StaticObstacle(100, 50, 0); // No damage
+    blueObstacle1->setIsBouncy(true);
+    blueObstacle1->setBounceStrength(1.2f); // Very bouncy
+    blueObstacle1->setPlayerFriction(0.8f);
+    blueObstacle1->setBrush(QBrush(Qt::blue)); // Blue color
+    blueObstacle1->setPos(500, 400); // x, y coordinates in the scene
+    scene->addItem(blueObstacle1);
+    
+    StaticObstacle* blueObstacle2 = new StaticObstacle(100, 50, 0); // No damage
+    blueObstacle2->setIsBouncy(true);
+    blueObstacle2->setBounceStrength(1.2f); // Very bouncy
+    blueObstacle2->setPlayerFriction(0.8f);
+    blueObstacle2->setBrush(QBrush(Qt::blue)); // Blue color
+    blueObstacle2->setPos(900, 350); // x, y coordinates in the scene
+    scene->addItem(blueObstacle2);
+    
     // Initialize camera position
     cameraX = player->pos().x() + player->rect().width() / 2;
     cameraY = scene->sceneRect().height() / 2;
