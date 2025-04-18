@@ -157,10 +157,17 @@ bool Player::checkPlatformCollisions() {
                 
                 // Check if this is a bouncy obstacle
                 StaticObstacle* staticObstacle = dynamic_cast<StaticObstacle*>(obstacle);
-                if (staticObstacle && staticObstacle->getIsBouncy()) {
-                    // Apply bounce - negative velocity with bounce strength
-                    yVelocity = -jumpHeight * staticObstacle->getBounceStrength();
-                    isOnObstacle = false; // We're bouncing, not standing
+                if (staticObstacle) {
+                    // Check for purple obstacles (damage=1 and not bouncy) to delete them when standing on them
+                    if (staticObstacle->getDamage() > 0 && !staticObstacle->getIsBouncy()) {
+                        // This is a purple obstacle - delete it when standing on it
+                        staticObstacle->deleteObstacle();
+                    }
+                    else if (staticObstacle->getIsBouncy()) {
+                        // Apply bounce - negative velocity with bounce strength
+                        yVelocity = -jumpHeight * staticObstacle->getBounceStrength();
+                        isOnObstacle = false; // We're bouncing, not standing
+                    }
                 }
                 
                 // Only call collideWithPlayer when we want to apply damage effects
@@ -352,6 +359,9 @@ void Player::takeDamage(int amount)
     // Call the Health object's takeDamage method with the specified amount
     health.takeDamage(amount);
     
+    // Emit signal to update UI with new health value
+    emit healthChanged(health.get());
+    
     // Visual indication of damage
     setBrush(QBrush(Qt::yellow));
     
@@ -396,4 +406,7 @@ void Player::reset()
     
     // Reset health
     health.reset();
+    
+    // Update UI with reset health
+    emit healthChanged(health.get());
 }

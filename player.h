@@ -26,6 +26,11 @@ public:
 
     void takeDamage(int amount = 1);
     void reset();
+    int getHealth() const { return health.get(); }
+    
+    signals:
+    void healthChanged(int newHealth);
+    
 
 private slots:
     void applyGravity();

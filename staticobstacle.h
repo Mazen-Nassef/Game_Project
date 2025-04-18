@@ -22,7 +22,8 @@ public:
     bool getIsPushable() const;
     void setIsPushable(bool value);
     float getPlayerFriction() const;
-    void setPlayerFriction(float value) ;
+    void setPlayerFriction(float value);
+    void deleteObstacle();
 };
 
 #endif // STATICOBSTACLE_H

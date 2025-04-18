@@ -38,6 +38,17 @@ void StaticObstacle::collideWithPlayer(Player* player)
     // For now, we're handling this purely for collision detection
 }
 
+void StaticObstacle::deleteObstacle()
+{
+    // Properly remove the obstacle from the scene
+    if (scene()) {
+        scene()->removeItem(this);
+    }
+    // The obstacle will be deleted when its parent is deleted or explicitly when needed
+    // Schedule deletion to avoid issues during collision handling
+    deleteLater();
+}
+
 bool StaticObstacle::getIsBouncy() const
 {
     return isBouncy;

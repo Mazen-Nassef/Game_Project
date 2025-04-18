@@ -82,6 +82,12 @@ MainWindow::MainWindow(QWidget *parent)
     player->setPos(100, 400); // Start the player above the floor
     scene->addItem(player);
 
+    // Connect player's health changes to the UI update
+    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
+    
+    // Set the initial health display
+    uiManager->updateHealth(player->getHealth());
+    
     // Create the view and set the scene
     view = ui->graphicsView;
     view->setScene(scene);
@@ -92,13 +98,13 @@ MainWindow::MainWindow(QWidget *parent)
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     
-    // Create two purple obstacles with damage=1 (not bouncy)
-    StaticObstacle* purpleObstacle1 = new StaticObstacle(100, 50, 1);
+    // Create two purple obstacles with damage=1 (not bouncy) that will be deleted when stood on
+    StaticObstacle* purpleObstacle1 = new StaticObstacle(50, 50, 1);
     purpleObstacle1->setIsBouncy(false);
     purpleObstacle1->setBounceStrength(0.0f);
     purpleObstacle1->setPlayerFriction(1.0f);
     purpleObstacle1->setBrush(QBrush(Qt::magenta)); // Purple color
-    purpleObstacle1->setPos(300, 400); // x, y coordinates in the scene
+    purpleObstacle1->setPos(300, 350); // x, y coordinates in the scene
     scene->addItem(purpleObstacle1);
     
     StaticObstacle* purpleObstacle2 = new StaticObstacle(100, 50, 1);
@@ -115,7 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
     blueObstacle1->setBounceStrength(1.2f); // Very bouncy
     blueObstacle1->setPlayerFriction(0.8f);
     blueObstacle1->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle1->setPos(500, 400); // x, y coordinates in the scene
+    blueObstacle1->setPos(500, 450); // x, y coordinates in the scene
     scene->addItem(blueObstacle1);
     
     StaticObstacle* blueObstacle2 = new StaticObstacle(100, 50, 0); // No damage
@@ -123,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
     blueObstacle2->setBounceStrength(1.2f); // Very bouncy
     blueObstacle2->setPlayerFriction(0.8f);
     blueObstacle2->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle2->setPos(900, 350); // x, y coordinates in the scene
+    blueObstacle2->setPos(900, 450); // x, y coordinates in the scene
     scene->addItem(blueObstacle2);
     
     // Initialize camera position
@@ -136,8 +142,7 @@ MainWindow::MainWindow(QWidget *parent)
         time += 1.0 / 60.0;  // Update time by 1/60th of a second for 60fps
         uiManager->updateTime(time);
 
-        // You can update score/health here or use your game logic to modify them
-        // Example: increase score as a test
+        // Update score
         score += 1;
         uiManager->updateScore(score);
 
@@ -161,6 +166,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     // Optionally, you can perform custom rendering here
+}
+
+void MainWindow::updatePlayerHealth(int newHealth)
+{
+    // Update the health display in the UI using UIManager
+    uiManager->updateHealth(newHealth);
 }
 
 void MainWindow::updateCamera()

@@ -1,5 +1,6 @@
 #include "obstacle.h"
 #include "player.h"
+#include "qgraphicsscene.h"
 
 Obstacle::Obstacle(QGraphicsItem *parent)
     : QObject(), QGraphicsRectItem(parent),
@@ -55,7 +56,11 @@ void Obstacle::takeDamage(int amount)
     if (isBreakable) {
         breakHitpoints -= amount;
         if (breakHitpoints <= 0) {
-            hide(); // Placeholder logic for destroying the obstacle
+            // Remove from scene and delete
+            if (scene()) {
+                scene()->removeItem(this);
+            }
+            deleteLater();
         }
     }
 }

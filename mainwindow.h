@@ -38,6 +38,9 @@ protected:
     // Paint event to update the UI
     void paintEvent(QPaintEvent *event) override;
 
+private slots:
+    void updatePlayerHealth(int newHealth);
+
 private:
     // Camera method to update view position
     void updateCamera();
