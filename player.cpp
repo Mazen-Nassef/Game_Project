@@ -158,8 +158,13 @@ bool Player::checkPlatformCollisions() {
                 // Check if this is a bouncy obstacle
                 StaticObstacle* staticObstacle = dynamic_cast<StaticObstacle*>(obstacle);
                 if (staticObstacle) {
+                    // Check if the obstacle is stompable
+                    if (obstacle->getIsStompable()) {
+                        // This is a stompable obstacle - delete it when standing on it
+                        staticObstacle->deleteObstacle();
+                    }
                     // Check for purple obstacles (damage=1 and not bouncy) to delete them when standing on them
-                    if (staticObstacle->getDamage() > 0 && !staticObstacle->getIsBouncy()) {
+                    else if (staticObstacle->getDamage() > 0 && !staticObstacle->getIsBouncy()) {
                         // This is a purple obstacle - delete it when standing on it
                         staticObstacle->deleteObstacle();
                     }

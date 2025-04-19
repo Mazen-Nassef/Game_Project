@@ -23,6 +23,7 @@ protected:
     bool hasEffect;
     int effectType;
     int effectDuration;
+    bool isStompable;  // Can the player destroy this obstacle by stomping on it?
 
 public:
     Obstacle(QGraphicsItem* parent = nullptr);
@@ -44,6 +45,10 @@ public:
     int getDamage() const;
     virtual void takeDamage(int amount);
     virtual void move() = 0;
+    
+    // Getter and setter for isStompable
+    bool getIsStompable() const;
+    void setIsStompable(bool value);
 };
 
 #endif // OBSTACLE_H

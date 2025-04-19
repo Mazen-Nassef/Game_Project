@@ -7,7 +7,7 @@ Obstacle::Obstacle(QGraphicsItem *parent)
     length(50), width(50), damage(1), isLethal(true),
     isBreakable(false), breakHitpoints(0),
     color(Qt::gray), hasEffect(false),
-    effectType(0), effectDuration(0)
+    effectType(0), effectDuration(0), isStompable(false)
 {
     setRect(0, 0, length, width);
     setBrush(QBrush(color));
@@ -28,7 +28,7 @@ Obstacle::Obstacle(int length_,
     length(length_), width(width_), damage(damage_),
     isLethal(lethal), isBreakable(breakable), breakHitpoints(breakHP),
     color(col), hasEffect(effect), effectType(effType),
-    effectDuration(effDuration)
+    effectDuration(effDuration), isStompable(false)
 {
     setRect(0, 0, length, width);
     setBrush(QBrush(color));
@@ -63,4 +63,14 @@ void Obstacle::takeDamage(int amount)
             deleteLater();
         }
     }
+}
+
+bool Obstacle::getIsStompable() const
+{
+    return isStompable;
+}
+
+void Obstacle::setIsStompable(bool value)
+{
+    isStompable = value;
 }

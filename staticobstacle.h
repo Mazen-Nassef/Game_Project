@@ -24,6 +24,10 @@ public:
     float getPlayerFriction() const;
     void setPlayerFriction(float value);
     void deleteObstacle();
+    
+    // Using base class isStompable methods
+    using Obstacle::getIsStompable;
+    using Obstacle::setIsStompable;
 };
 
 #endif // STATICOBSTACLE_H

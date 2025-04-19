@@ -18,6 +18,9 @@ StaticObstacle::StaticObstacle(int length_, int width_, int damage_, QGraphicsIt
 {
     // Optionally adjust appearance for static obstacles
     // setBrush(QBrush(Qt::darkGray));
+    
+    // Default to not stompable
+    setIsStompable(false);
 }
 
 // Static obstacles do not move
