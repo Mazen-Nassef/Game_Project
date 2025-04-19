@@ -8,11 +8,10 @@
 #include "player.h"
 #include "uimanager.h"
 #include "health.h"
+#include "level.h"
 #include <QTimer>
 #include <QTime>
 #include <QLabel>
-#include "uimanager.h"
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -33,25 +32,26 @@ public:
     void setHealth(int health);
     int getElapsedTime() const;
 
-
 protected:
     // Paint event to update the UI
     void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void updatePlayerHealth(int newHealth);
+    void switchToLevel(Level::LevelType levelType);
 
 private:
     // Camera method to update view position
     void updateCamera();
+    void setupGame();
     
     Ui::MainWindow *ui;
     UIManager* uiManager;
     int score;
-    Health* health;;
+    Health* health;
     double time;
     QTimer* timer;
-     QString currentMessage;
+    QString currentMessage;
 
     QTimer* gameTimer;
     QTime startTime;
@@ -60,7 +60,9 @@ private:
     QLabel *healthLabel;
     QLabel *timeLabel;
     
-    // References to player and view for camera control
+    // Game elements
+    QGraphicsScene* scene;
+    Level* currentLevel;
     Player* player;
     QGraphicsView* view;
     

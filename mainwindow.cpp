@@ -1,20 +1,38 @@
 #include "mainwindow.h"
-#include "staticobstacle.h"
-#include "movingobstacle.h"
 #include "ui_mainwindow.h"
 #include "player.h"
 #include "uimanager.h"
 #include "health.h"
+#include "level.h"
 #include <QTimer>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , uiManager(new UIManager())
-    , health(new Health(3))  // Create Health object with 100 max health
+    , health(new Health(3))
+    , scene(nullptr)
+    , currentLevel(nullptr)
 {
     ui->setupUi(this);
+    setupGame();
+}
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+    delete uiManager;
+    delete health;
+    delete currentLevel;
+    
+    // Scene and player will be cleaned up by Qt's parent-child system
+}
+
+void MainWindow::setupGame()
+{
+    // Set up UI labels
     scoreLabel = new QLabel(this);
     healthLabel = new QLabel(this);
     timeLabel = new QLabel(this);
@@ -53,40 +71,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set the initial values in UIManager
     uiManager->updateScore(score);
-    uiManager->updateHealth(health->get());  // Update health from Health object
+    uiManager->updateHealth(health->get());
 
     // Create the scene
-    QGraphicsScene* scene = new QGraphicsScene(this);
-    scene->setSceneRect(0, 0, 2000, 600); // Extended scene width for scrolling
-
-    // Add platforms to the scene
-    // Main floor platform (solid)
-    Platform* floor = new Platform(0, 500, 2000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
-    scene->addItem(floor);
-    
-    // Add some floating platforms (passthrough)
-    Platform* platform1 = new Platform(200, 400, 200, 20);
-    Platform* platform2 = new Platform(500, 350, 200, 20);
-    Platform* platform3 = new Platform(800, 300, 200, 20);
-    Platform* platform4 = new Platform(1100, 250, 200, 20);
-    Platform* platform5 = new Platform(1400, 300, 200, 20);
-    
-    scene->addItem(platform1);
-    scene->addItem(platform2);
-    scene->addItem(platform3);
-    scene->addItem(platform4);
-    scene->addItem(platform5);
-    
-    // Create the player object and store reference
-    player = new Player();
-    player->setPos(100, 400); // Start the player above the floor
-    scene->addItem(player);
-
-    // Connect player's health changes to the UI update
-    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
-    
-    // Set the initial health display
-    uiManager->updateHealth(player->getHealth());
+    scene = new QGraphicsScene(this);
     
     // Create the view and set the scene
     view = ui->graphicsView;
@@ -98,39 +86,21 @@ MainWindow::MainWindow(QWidget *parent)
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     
-    // Create two purple obstacles with damage=1 (not bouncy) that will be deleted when stood on
-    StaticObstacle* purpleObstacle1 = new StaticObstacle(50, 50, 1);
-    purpleObstacle1->setIsBouncy(false);
-    purpleObstacle1->setBounceStrength(0.0f);
-    purpleObstacle1->setPlayerFriction(1.0f);
-    purpleObstacle1->setBrush(QBrush(Qt::magenta)); // Purple color
-    purpleObstacle1->setPos(300, 350); // x, y coordinates in the scene
-    scene->addItem(purpleObstacle1);
+    // Create the player
+    player = new Player();
+    player->setPos(100, 400); // Starting position
+    scene->addItem(player);
     
-    StaticObstacle* purpleObstacle2 = new StaticObstacle(100, 50, 1);
-    purpleObstacle2->setIsBouncy(false);
-    purpleObstacle2->setBounceStrength(0.0f);
-    purpleObstacle2->setPlayerFriction(1.0f);
-    purpleObstacle2->setBrush(QBrush(Qt::magenta)); // Purple color
-    purpleObstacle2->setPos(700, 400); // x, y coordinates in the scene
-    scene->addItem(purpleObstacle2);
+    // Connect player's health changes to the UI update
+    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
     
-    // Create two blue obstacles with damage=0 (very bouncy)
-    StaticObstacle* blueObstacle1 = new StaticObstacle(100, 50, 0); // No damage
-    blueObstacle1->setIsBouncy(true);
-    blueObstacle1->setBounceStrength(1.2f); // Very bouncy
-    blueObstacle1->setPlayerFriction(0.8f);
-    blueObstacle1->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle1->setPos(500, 450); // x, y coordinates in the scene
-    scene->addItem(blueObstacle1);
+    // Set the initial health display
+    uiManager->updateHealth(player->getHealth());
     
-    StaticObstacle* blueObstacle2 = new StaticObstacle(100, 50, 0); // No damage
-    blueObstacle2->setIsBouncy(true);
-    blueObstacle2->setBounceStrength(1.2f); // Very bouncy
-    blueObstacle2->setPlayerFriction(0.8f);
-    blueObstacle2->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle2->setPos(900, 450); // x, y coordinates in the scene
-    scene->addItem(blueObstacle2);
+    // Create level manager and set it up with the current scene
+    currentLevel = new Level(scene);
+    currentLevel->setLevelType(Level::LEVEL_1);
+    currentLevel->createLevel();
     
     // Initialize camera position
     cameraX = player->pos().x() + player->rect().width() / 2;
@@ -153,19 +123,28 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     gameTimer->start(1000 / 60);  // Update every 1/60 seconds for 60fps
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-    delete uiManager;
-    delete health;  // Clean up the Health object
+    
+    // Add level switch buttons for testing
+    QPushButton* level1Button = new QPushButton("Level 1", this);
+    QPushButton* level2Button = new QPushButton("Level 2", this);
+    
+    connect(level1Button, &QPushButton::clicked, this, [this]() {
+        switchToLevel(Level::LEVEL_1);
+    });
+    
+    connect(level2Button, &QPushButton::clicked, this, [this]() {
+        switchToLevel(Level::LEVEL_2);
+    });
+    
+    // Position the buttons
+    level1Button->move(10, this->height() - 40);
+    level2Button->move(90, this->height() - 40);
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    // Optionally, you can perform custom rendering here
+    // Custom rendering if needed
 }
 
 void MainWindow::updatePlayerHealth(int newHealth)
@@ -174,46 +153,40 @@ void MainWindow::updatePlayerHealth(int newHealth)
     uiManager->updateHealth(newHealth);
 }
 
+void MainWindow::switchToLevel(Level::LevelType levelType)
+{
+    // Reset player position
+    player->setPos(100, 400);
+    player->reset();
+    
+    // Set level type and create it
+    currentLevel->setLevelType(levelType);
+    currentLevel->createLevel();
+    
+    // Make sure player is on top of all other items
+    scene->removeItem(player);
+    scene->addItem(player);
+    
+    // Reset score and time
+    score = 0;
+    time = 0.0;
+    uiManager->updateScore(score);
+    uiManager->updateTime(time);
+    uiManager->updateHealth(player->getHealth());
+    
+    // Reset camera
+    cameraX = player->pos().x() + player->rect().width() / 2;
+    cameraY = scene->sceneRect().height() / 2;
+    view->centerOn(cameraX, cameraY);
+}
+
 void MainWindow::updateCamera()
 {
-    if (!player)
+    if (!player || !currentLevel)
         return;
-        
-    // Get player's center position
-    QPointF playerPos = player->pos();
-    qreal playerCenterX = playerPos.x() + player->rect().width() / 2;
-    qreal playerCenterY = playerPos.y() + player->rect().height() / 2;
     
-    // Get view dimensions
-    QRectF viewRect = view->viewport()->rect();
-    QRectF sceneRect = view->scene()->sceneRect();
-    
-    // Calculate target camera position with horizontal following only
-    // Keep vertical position fixed in the middle of the screen
-    qreal targetX = playerCenterX;
-    qreal targetY = sceneRect.height() / 2;
-    
-    // Add boundaries to prevent camera from showing beyond the scene
-    targetX = qMax(viewRect.width() / 2, targetX);
-    targetX = qMin(targetX, sceneRect.right() - viewRect.width() / 2);
-    
-    // Initialize camera position on first run
-    if (cameraX == 0.0 && cameraY == 0.0) {
-        cameraX = targetX;
-        cameraY = targetY;
-    }
-    
-    // Smooth camera movement using interpolation
-    // This creates a "lerp" effect where the camera follows with a slight delay
-    cameraX += (targetX - cameraX) * cameraSmoothness;
-    cameraY += (targetY - cameraY) * cameraSmoothness;
-    
-    // Round camera position to nearest pixel to prevent subpixel jittering
-    qreal roundedX = qRound(cameraX);
-    qreal roundedY = qRound(cameraY);
-    
-    // Set the view center with the smoothed position
-    view->centerOn(roundedX, roundedY);
+    // Let the level handle camera movement
+    currentLevel->followPlayer(view, player);
     
     // Position UI elements in the top right corner of the viewport
     int rightMargin = 20; // Distance from right edge

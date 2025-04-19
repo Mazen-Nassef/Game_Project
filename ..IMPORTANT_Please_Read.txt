@@ -1,0 +1,10 @@
+the following is the github link for the repository this project was made on:
+https://github.com/Mazen-Nassef/Game_Project
+
+it used to be private, but i made it public for the submission
+
+i am not at all proud of the quality of the project so far
+
+please look at the commit history, and you will see why
+
+i did my best with what i had, i'll make sure the final submission is more acceptable
