@@ -2,17 +2,12 @@
 #include "ui_mainwindow.h"
 #include "player.h"
 #include "uimanager.h"
-#include "health.h"
 #include "level.h"
-#include <QTimer>
-#include <QPushButton>
-#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , uiManager(new UIManager())
-    , health(new Health(3))
+    , uiManager(new UIManager(this))
     , scene(nullptr)
     , currentLevel(nullptr)
     , player(nullptr)
@@ -25,54 +20,21 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete uiManager;
-    delete health;
     delete currentLevel;
     
-    // Scene and player will be cleaned up by Qt's parent-child system
+    // Scene will be cleaned up by Qt's parent-child system
 }
 
 void MainWindow::setupGame()
 {
-    // Set up UI labels
-    scoreLabel = new QLabel(this);
-    healthLabel = new QLabel(this);
-    timeLabel = new QLabel(this);
-
-    // Set labels with right alignment and make them stand out against any background
-    QString styleSheet = "color: black; font: bold 16px; background-color: rgba(255, 255, 255, 150); padding: 2px 5px; border-radius: 3px;";
-    scoreLabel->setStyleSheet(styleSheet);
-    healthLabel->setStyleSheet(styleSheet);
-    timeLabel->setStyleSheet(styleSheet);
+    // Set up UI
+    uiManager->setupUI(this);
     
-    // Align text to the right within each label
-    scoreLabel->setAlignment(Qt::AlignRight);
-    healthLabel->setAlignment(Qt::AlignRight);
-    timeLabel->setAlignment(Qt::AlignRight);
-    
-    // Set initial position (will be updated in updateCamera)
-    scoreLabel->move(10, 10);
-    healthLabel->move(10, 40);
-    timeLabel->move(10, 70);
-
-    scoreLabel->raise();
-    healthLabel->raise();
-    timeLabel->raise();
-
-    scoreLabel->show();
-    healthLabel->show();
-    timeLabel->show();
-
-    uiManager->setScoreLabel(scoreLabel);
-    uiManager->setHealthLabel(healthLabel);
-    uiManager->setTimeLabel(timeLabel);
-
-    // Set default score and health
-    score = 0;
-    time = 0.0;
-
-    // Set the initial values in UIManager
-    uiManager->updateScore(score);
-    uiManager->updateHealth(health->get());
+    // Connect UI signals
+    connect(uiManager, &UIManager::levelSwitchRequested, 
+            this, &MainWindow::switchToLevel);
+    connect(uiManager, &UIManager::cameraUpdateRequested,
+            this, &MainWindow::updateCamera);
 
     // Create the scene
     scene = new QGraphicsScene(this);
@@ -95,49 +57,15 @@ void MainWindow::setupGame()
     // Get the player from level
     player = currentLevel->getPlayer();
     
-    // Connect player's health changes to the UI update
-    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
-    
-    // Set the initial health display
-    uiManager->updateHealth(player->getHealth());
+    // Connect player to UI manager
+    uiManager->connectPlayerSignals(player);
     
     // Initialize camera position
     cameraX = player->pos().x() + player->rect().width() / 2;
     cameraY = scene->sceneRect().height() / 2;
 
-    // Set up 60fps timer
-    gameTimer = new QTimer(this);
-    connect(gameTimer, &QTimer::timeout, this, [=]() {
-        time += 1.0 / 60.0;  // Update time by 1/60th of a second for 60fps
-        uiManager->updateTime(time);
-
-        // Update score
-        score += 1;
-        uiManager->updateScore(score);
-
-        // Update camera to follow player
-        updateCamera();
-
-        update();  // Trigger the paintEvent to refresh the display
-    });
-
-    gameTimer->start(1000 / 60);  // Update every 1/60 seconds for 60fps
-    
-    // Add level switch buttons for testing
-    QPushButton* level1Button = new QPushButton("Level 1", this);
-    QPushButton* level2Button = new QPushButton("Level 2", this);
-    
-    connect(level1Button, &QPushButton::clicked, this, [this]() {
-        switchToLevel(Level::LEVEL_1);
-    });
-    
-    connect(level2Button, &QPushButton::clicked, this, [this]() {
-        switchToLevel(Level::LEVEL_2);
-    });
-    
-    // Position the buttons
-    level1Button->move(10, this->height() - 40);
-    level2Button->move(90, this->height() - 40);
+    // Start game timer in UI manager
+    uiManager->startGameTimer();
 }
 
 void MainWindow::paintEvent(QPaintEvent *event)
@@ -146,30 +74,20 @@ void MainWindow::paintEvent(QPaintEvent *event)
     // Custom rendering if needed
 }
 
-void MainWindow::updatePlayerHealth(int newHealth)
-{
-    // Update the health display in the UI using UIManager
-    uiManager->updateHealth(newHealth);
-}
-
-void MainWindow::switchToLevel(Level::LevelType levelType)
+void MainWindow::switchToLevel(int levelType)
 {
     // Set level type and create it
-    currentLevel->setLevelType(levelType);
+    currentLevel->setLevelType(static_cast<Level::LevelType>(levelType));
     currentLevel->createLevel();
     
     // Get the new player from the level
     player = currentLevel->getPlayer();
     
-    // Connect player's health changes to the UI update
-    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
+    // Connect player to UI manager
+    uiManager->connectPlayerSignals(player);
     
-    // Reset score and time
-    score = 0;
-    time = 0.0;
-    uiManager->updateScore(score);
-    uiManager->updateTime(time);
-    uiManager->updateHealth(player->getHealth());
+    // Reset UI
+    uiManager->resetUI();
     
     // Reset camera
     cameraX = player->pos().x() + player->rect().width() / 2;
@@ -185,21 +103,6 @@ void MainWindow::updateCamera()
     // Let the level handle camera movement
     currentLevel->followPlayer(view);
     
-    // Position UI elements in the top right corner of the viewport
-    int rightMargin = 20; // Distance from right edge
-    int topMargin = 10;   // Distance from top edge
-    int labelSpacing = 30; // Vertical space between labels
-    
-    // Calculate right-aligned positions based on viewport width
-    int viewportWidth = view->viewport()->width();
-    
-    // Position labels in top-right corner with right alignment
-    scoreLabel->move(viewportWidth - scoreLabel->width() - rightMargin, topMargin);
-    healthLabel->move(viewportWidth - healthLabel->width() - rightMargin, topMargin + labelSpacing);
-    timeLabel->move(viewportWidth - timeLabel->width() - rightMargin, topMargin + labelSpacing * 2);
-    
-    // Make sure UI is always on top
-    scoreLabel->raise();
-    healthLabel->raise();
-    timeLabel->raise();
+    // Let UI manager position the labels
+    uiManager->positionLabels(view);
 }
