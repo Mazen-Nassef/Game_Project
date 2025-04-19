@@ -93,9 +93,10 @@ bool Player::checkPlatformCollisions() {
     for (QGraphicsItem* item : collidingItems) {
         // Check for platforms first
         Platform* platform = dynamic_cast<Platform*>(item);
-        if (platform) {
+        if (platform)
+        {
             QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
-            
+            if (yVelocity > 0){
             // Check if player is directly above platform
             if (feetY >= platformRect.top() - smallGap && feetY <= platformRect.top() + smallGap) {
                 // Player is directly on top of platform
@@ -112,7 +113,7 @@ bool Player::checkPlatformCollisions() {
                 isOnPlatform = true;
                 currentPlatform = platform;
             }
-            
+        }
             // Check for side collisions with solid platforms
             if (platform->isSolid()) {
                 QRectF playerRect = mapToScene(rect()).boundingRect();
