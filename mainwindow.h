@@ -63,7 +63,7 @@ private:
     // Game elements
     QGraphicsScene* scene;
     Level* currentLevel;
-    Player* player;
+    Player* player; // Now a reference to the player owned by Level
     QGraphicsView* view;
     
     // Camera position tracking for smooth movement

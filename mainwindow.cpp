@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     , health(new Health(3))
     , scene(nullptr)
     , currentLevel(nullptr)
+    , player(nullptr)
 {
     ui->setupUi(this);
     setupGame();
@@ -86,21 +87,19 @@ void MainWindow::setupGame()
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     
-    // Create the player
-    player = new Player();
-    player->setPos(100, 400); // Starting position
-    scene->addItem(player);
+    // Create level manager and set it up with the current scene
+    currentLevel = new Level(scene);
+    currentLevel->setLevelType(Level::LEVEL_1);
+    currentLevel->createLevel();
+    
+    // Get the player from level
+    player = currentLevel->getPlayer();
     
     // Connect player's health changes to the UI update
     connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
     
     // Set the initial health display
     uiManager->updateHealth(player->getHealth());
-    
-    // Create level manager and set it up with the current scene
-    currentLevel = new Level(scene);
-    currentLevel->setLevelType(Level::LEVEL_1);
-    currentLevel->createLevel();
     
     // Initialize camera position
     cameraX = player->pos().x() + player->rect().width() / 2;
@@ -155,17 +154,15 @@ void MainWindow::updatePlayerHealth(int newHealth)
 
 void MainWindow::switchToLevel(Level::LevelType levelType)
 {
-    // Reset player position
-    player->setPos(100, 400);
-    player->reset();
-    
     // Set level type and create it
     currentLevel->setLevelType(levelType);
     currentLevel->createLevel();
     
-    // Make sure player is on top of all other items
-    scene->removeItem(player);
-    scene->addItem(player);
+    // Get the new player from the level
+    player = currentLevel->getPlayer();
+    
+    // Connect player's health changes to the UI update
+    connect(player, &Player::healthChanged, this, &MainWindow::updatePlayerHealth);
     
     // Reset score and time
     score = 0;
@@ -182,11 +179,11 @@ void MainWindow::switchToLevel(Level::LevelType levelType)
 
 void MainWindow::updateCamera()
 {
-    if (!player || !currentLevel)
+    if (!currentLevel)
         return;
     
     // Let the level handle camera movement
-    currentLevel->followPlayer(view, player);
+    currentLevel->followPlayer(view);
     
     // Position UI elements in the top right corner of the viewport
     int rightMargin = 20; // Distance from right edge

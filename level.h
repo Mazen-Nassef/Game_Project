@@ -35,6 +35,7 @@ private:
     QList<Platform*> platforms;
     QList<Obstacle*> obstacles;
     QGraphicsPixmapItem* goal;
+    Player* player;
     
     // Clear level elements
     void clearLevel();
@@ -66,7 +67,10 @@ public:
     void update_level();
 
     // Camera control
-    void followPlayer(QGraphicsView* view, Player* player);
+    void followPlayer(QGraphicsView* view);
+    
+    // Get the player pointer
+    Player* getPlayer() const { return player; }
 };
 
 #endif // LEVEL_H

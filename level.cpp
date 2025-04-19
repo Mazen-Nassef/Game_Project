@@ -9,6 +9,7 @@ Level::Level(QGraphicsScene* scene) {
     width = 2000;
     height = 600;
     goal = nullptr;
+    player = nullptr;
     
     set_frequencyM();
     set_velocityM();
@@ -41,6 +42,13 @@ void Level::clearLevel() {
         scene->removeItem(goal);
         delete goal;
         goal = nullptr;
+    }
+    
+    // Clear player
+    if (player) {
+        scene->removeItem(player);
+        delete player;
+        player = nullptr;
     }
 }
 
@@ -83,6 +91,11 @@ void Level::createLevel() {
 }
 
 void Level::setupLevel1() {
+    // Create player
+    player = new Player();
+    player->setPos(100, 400);
+    scene->addItem(player);
+    
     // Create main floor platform (solid)
     Platform* floor = new Platform(0, 500, width, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(floor);
@@ -163,6 +176,11 @@ void Level::setupLevel1() {
 
 void Level::setupLevel2() {
     // Level 2 - harder layout with more obstacles
+    
+    // Create player
+    player = new Player();
+    player->setPos(100, 400);
+    scene->addItem(player);
     
     // Create main floor platform (solid) but with gaps
     Platform* floor1 = new Platform(0, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
@@ -316,7 +334,7 @@ void Level::set_damageM() {
     damage_multiplier = 1.0 + 0.1 * (level_number - 1);
 }
 
-void Level::followPlayer(QGraphicsView* view, Player* player) {
+void Level::followPlayer(QGraphicsView* view) {
     if (!view || !player) return;
     
     int playerX = player->x();
