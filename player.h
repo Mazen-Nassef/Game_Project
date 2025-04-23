@@ -10,6 +10,9 @@
 #include "health.h"
 #include "platform.h"
 
+// Forward declaration
+class QGraphicsPathItem;
+
 class Player : public QObject, public QGraphicsRectItem {
     Q_OBJECT
 public:
@@ -23,6 +26,7 @@ public:
     void moveBackward();
     void jump();
     void performDash();
+    void performAttack();
 
     void takeDamage(int amount = 1);
     void reset();
@@ -34,12 +38,18 @@ public:
 
 private slots:
     void applyGravity();
+    void removeAttack();
+    void checkAttackCollision();
 
 private:
     // Check for platform collisions and handle them
     bool checkPlatformCollisions();
     // Check if the player can drop through the current platform
     bool canDropThroughPlatform();
+    // Create the crescent-shaped attack graphic
+    QGraphicsPathItem* createAttackGraphic(float dirX, float dirY);
+    // Update the position of the attack graphic to follow the player
+    void updateAttackPosition();
     
     Health health;
     float speed;
@@ -64,10 +74,21 @@ private:
 
     QSet<int> keysHeld;
 
+    // Dash related variables
     QTimer *dashTimer = nullptr;
     bool isDashing = false;
     float dashX = 0, dashY = 0;
-
+    
+    // Attack related variables
+    QTimer *attackTimer = nullptr;
+    QTimer *attackCollisionTimer = nullptr;
+    bool isAttacking = false;
+    float attackDuration = 500; // Default half a second
+    float attackLaunchMagnitude = 7; // How far the player gets launched after hitting something
+    float attackDistance = 30; // How far the attack appears from the player
+    QGraphicsPathItem *attackGraphic = nullptr; // Visual representation of attack
+    float attackDirectionX = 0;
+    float attackDirectionY = 0;
 };
 
 #endif // PLAYER_H

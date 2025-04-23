@@ -6,7 +6,9 @@
 
 Player::Player()
     : health(3), speed(1), maxSpeed(5), friction(0.5), gravity(1), dashSpeed(10), dashDuration(150), length(50), width(30), jumpHeight(15),
-    yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), floorY(500), gravityTimer(new QTimer(this))
+    yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), floorY(500), gravityTimer(new QTimer(this)),
+    attackDuration(500), attackLaunchMagnitude(7), attackDistance(30), isAttacking(false), attackGraphic(nullptr), attackTimer(nullptr), attackCollisionTimer(nullptr),
+    attackDirectionX(0), attackDirectionY(0)
     // player stats, we can tweek until it feels right
 {
     setRect(0, 0, width, length);
@@ -42,6 +44,9 @@ void Player::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_M:
         performDash();
+        break;
+    case Qt::Key_N:
+        performAttack();
         break;
     }
     // this used to be how movement was handled but i started using keysHeld instead to make it smoother
@@ -306,6 +311,11 @@ void Player::applyGravity()
     setX(x() + xVelocity + dashX);
     setY(y() + yVelocity + dashY);
     
+    // Update attack position if attacking
+    if (isAttacking && attackGraphic) {
+        updateAttackPosition();
+    }
+    
     // Handle floor collision first (simpler)
     isOnGround = false;
     if (y() >= floorY) {
@@ -387,6 +397,181 @@ void Player::takeDamage(int amount)
     }
 }
     
+void Player::performAttack()
+{
+    // Don't allow attacking if already attacking
+    if (isAttacking) return;
+    
+    // Determine attack direction using the same logic as dash
+    float dirX = 0, dirY = 0;
+    if (keysHeld.contains(Qt::Key_Left))  dirX -= 1;
+    if (keysHeld.contains(Qt::Key_Right)) dirX += 1;
+    if (keysHeld.contains(Qt::Key_Up))    dirY -= 1;
+    if (keysHeld.contains(Qt::Key_Down))  dirY += 1;
+    
+    // Default to forward attack if no direction is pressed
+    if (dirX == 0 && dirY == 0) {
+        // Check which way the player is facing based on last movement
+        if (xVelocity > 0) dirX = 1;  // Facing right
+        else if (xVelocity < 0) dirX = -1;  // Facing left
+        else dirX = 1;  // Default to right if no horizontal velocity
+    }
+    
+    // Normalize the direction vector
+    float length = std::sqrt(dirX * dirX + dirY * dirY);
+    dirX /= length;
+    dirY /= length;
+    
+    // Save the attack direction for collision response
+    attackDirectionX = dirX;
+    attackDirectionY = dirY;
+    
+    // Create the crescent attack graphic
+    attackGraphic = createAttackGraphic(dirX, dirY);
+    if (scene()) {
+        scene()->addItem(attackGraphic);
+    }
+    
+    // Set attack state
+    isAttacking = true;
+    
+    // Create attack duration timer if it doesn't exist
+    if (!attackTimer) {
+        attackTimer = new QTimer(this);
+        attackTimer->setSingleShot(true);
+        connect(attackTimer, &QTimer::timeout, this, &Player::removeAttack);
+    }
+    
+    // Create collision check timer if it doesn't exist
+    if (!attackCollisionTimer) {
+        attackCollisionTimer = new QTimer(this);
+        connect(attackCollisionTimer, &QTimer::timeout, this, &Player::checkAttackCollision);
+    }
+    
+    // Start timers
+    attackTimer->start(attackDuration);
+    attackCollisionTimer->start(16); // Check collisions at ~60fps
+}
+
+void Player::removeAttack()
+{
+    // Clean up the attack graphic
+    if (attackGraphic) {
+        if (scene()) {
+            scene()->removeItem(attackGraphic);
+        }
+        delete attackGraphic;
+        attackGraphic = nullptr;
+    }
+    
+    // Stop collision detection
+    if (attackCollisionTimer && attackCollisionTimer->isActive()) {
+        attackCollisionTimer->stop();
+    }
+    
+    // Reset attack state
+    isAttacking = false;
+}
+
+void Player::checkAttackCollision()
+{
+    // Skip if no attack graphic or no scene
+    if (!attackGraphic || !scene()) return;
+    
+    // Get all items colliding with the attack graphic
+    QList<QGraphicsItem*> collidingItems = scene()->collidingItems(attackGraphic);
+    
+    for (QGraphicsItem* item : collidingItems) {
+        // Skip collision with player itself
+        if (item == this) continue;
+        
+        // Check for platforms and obstacles
+        if (dynamic_cast<Platform*>(item) || dynamic_cast<Obstacle*>(item)) {
+            // Launch player in the opposite direction
+            xVelocity = -attackDirectionX * attackLaunchMagnitude;
+            yVelocity = -attackDirectionY * attackLaunchMagnitude;
+            
+            // End the attack early
+            removeAttack();
+            break;
+        }
+    }
+    
+    // Update the attack graphic position to follow the player
+    if (attackGraphic) {
+        updateAttackPosition();
+    }
+}
+
+void Player::updateAttackPosition()
+{
+    if (!attackGraphic) return;
+    
+    // Position the attack in front of the player based on the attack direction
+    float offsetX = rect().width() / 2 + attackDirectionX * attackDistance;
+    float offsetY = rect().height() / 2 + attackDirectionY * attackDistance;
+    
+    attackGraphic->setPos(pos().x() + offsetX, pos().y() + offsetY);
+}
+
+QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
+{
+    // Create a crescent-shaped path
+    QPainterPath path;
+    
+    // The size of the crescent
+    float radius = 30;
+    float thickness = 10;
+    
+    // Calculate angle of direction vector
+    float angle = std::atan2(dirY, dirX) * 180 / M_PI;
+    
+    // Adjust the angle offset to make the crescent points face the player in all directions
+    float startAngle;
+    
+    // For vertical directions (up/down), flip the crescent orientation
+    if (std::abs(dirY) > std::abs(dirX)) {
+        // Primarily vertical direction (up or down)
+        if (dirY < 0) {
+            // Up direction - points should face down (towards player)
+            startAngle = angle + 135;
+        } else {
+            // Down direction - points should face up (towards player)
+            startAngle = angle - 135;
+        }
+    } else {
+        // Primarily horizontal or diagonal direction
+        startAngle = angle - 45;
+    }
+    
+    // Create a crescent shape
+    path.arcTo(-radius, -radius, radius * 2, radius * 2, startAngle, 90);
+    
+    // Create an inner arc to make it hollow
+    QPainterPath innerPath;
+    innerPath.arcTo(-(radius - thickness), -(radius - thickness), 
+                   (radius - thickness) * 2, (radius - thickness) * 2, 
+                   startAngle, 90);
+    
+    // Subtract inner arc from outer arc to create crescent
+    path = path.subtracted(innerPath);
+    
+    // Create the graphic item
+    QGraphicsPathItem* attackItem = new QGraphicsPathItem(path);
+    
+    // Set position relative to player
+    float offsetX = rect().width() / 2 + dirX * attackDistance;
+    float offsetY = rect().height() / 2 + dirY * attackDistance;
+    
+    attackItem->setPos(pos().x() + offsetX, pos().y() + offsetY);
+    
+    // Make it a bright color to contrast with player
+    attackItem->setBrush(QBrush(Qt::green));
+    attackItem->setPen(QPen(Qt::darkGreen, 2));
+    
+    return attackItem;
+}
+
 void Player::reset()
 {
     // Reset player position
@@ -401,6 +586,10 @@ void Player::reset()
     canDash = true;
     dashX = 0;
     dashY = 0;
+    
+    // Reset attack state
+    isAttacking = false;
+    removeAttack();
     
     // Reset platform state
     isOnGround = false;
