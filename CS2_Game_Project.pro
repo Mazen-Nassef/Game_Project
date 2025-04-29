@@ -13,23 +13,23 @@ SOURCES += \
     level.cpp \
     main.cpp \
     mainwindow.cpp \
-    movingobstacle.cpp \
     obstacle.cpp \
     platform.cpp \
     player.cpp \
     scoresystem.cpp \
     staticobstacle.cpp \
+    enemy.cpp \
     uimanager.cpp
 
 HEADERS += \
     health.h \
     level.h \
     mainwindow.h \
-    movingobstacle.h \
     obstacle.h \
     platform.h \
     player.h \
     scoresystem.h \
+    enemy.h \
     staticobstacle.h \
     uimanager.h
 
