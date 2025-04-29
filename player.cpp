@@ -2,6 +2,8 @@
 #include <QList>
 #include "player.h"
 #include "qgraphicsscene.h"
+#include "platform.h" // Add the include at the top of the file
+#include "obstacle.h"
 
 
 Player::Player()
@@ -73,10 +75,7 @@ void Player::jump() {
     currentPlatform = nullptr;
 }
 
-#include "platform.h" // Add the include at the top of the file
 
-#include "obstacle.h"
-#include "staticobstacle.h"
 
 bool Player::checkPlatformCollisions() {
     if (!scene()) {
@@ -162,21 +161,21 @@ bool Player::checkPlatformCollisions() {
                 isOnObstacle = true;
                 
                 // Check if this is a bouncy obstacle
-                StaticObstacle* staticObstacle = dynamic_cast<StaticObstacle*>(obstacle);
-                if (staticObstacle) {
+                Obstacle* Obstacle = dynamic_cast<class Obstacle*>(obstacle);
+                if (Obstacle) {
                     // Check if the obstacle is stompable
                     if (obstacle->getIsStompable()) {
                         // This is a stompable obstacle - delete it when standing on it
-                        staticObstacle->deleteObstacle();
+                        Obstacle->deleteObstacle();
                     }
                     // Check for purple obstacles (damage=1 and not bouncy) to delete them when standing on them
-                    else if (staticObstacle->getDamage() > 0 && !staticObstacle->getIsBouncy()) {
+                    else if (Obstacle->getDamage() > 0 && !Obstacle->getIsBouncy()) {
                         // This is a purple obstacle - delete it when standing on it
-                        staticObstacle->deleteObstacle();
+                        Obstacle->deleteObstacle();
                     }
-                    else if (staticObstacle->getIsBouncy()) {
+                    else if (Obstacle->getIsBouncy()) {
                         // Apply bounce - negative velocity with bounce strength
-                        yVelocity = -jumpHeight * staticObstacle->getBounceStrength();
+                        yVelocity = -jumpHeight * Obstacle->getBounceStrength();
                         isOnObstacle = false; // We're bouncing, not standing
                     }
                 }

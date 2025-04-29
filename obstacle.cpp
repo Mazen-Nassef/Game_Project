@@ -88,6 +88,15 @@ void Obstacle::setIsPushable(bool value) { isPushable = value; }
 float Obstacle::getPlayerFriction() const { return playerFriction; }
 void Obstacle::setPlayerFriction(float value) { playerFriction = value; }
 
+void Obstacle::deleteObstacle()
+{
+    if (scene()) {
+        scene()->removeItem(this);
+    }
+    deleteLater();  // Schedules it for safe deletion
+}
+
+
 void Obstacle::move() //The move function for moving obstacles.
 {
     switch (pattern) {

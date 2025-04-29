@@ -93,6 +93,8 @@ public:
     void setPatrolPoints(const QPointF& start, const QPointF& end);
     void setMovementSpeed(float speedVal);
     void setCircularMotion(float centerX, float centerY, float rad);
+    void deleteObstacle();
+
 
 private slots:
     void updatePosition();

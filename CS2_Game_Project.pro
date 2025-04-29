@@ -17,7 +17,6 @@ SOURCES += \
     platform.cpp \
     player.cpp \
     scoresystem.cpp \
-    staticobstacle.cpp \
     enemy.cpp \
     uimanager.cpp
 
@@ -30,7 +29,6 @@ HEADERS += \
     player.h \
     scoresystem.h \
     enemy.h \
-    staticobstacle.h \
     uimanager.h
 
 FORMS += \

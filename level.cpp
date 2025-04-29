@@ -119,60 +119,8 @@ void Level::setupLevel1() {
     platforms.append(platform3);
     platforms.append(platform4);
     platforms.append(platform5);
-    
-    // Create obstacles
-    
-    // Purple obstacles (single use)
-    StaticObstacle* purpleObstacle1 = new StaticObstacle(50, 50, 1);
-    purpleObstacle1->setIsBouncy(false);
-    purpleObstacle1->setBounceStrength(0.0f);
-    purpleObstacle1->setPlayerFriction(1.0f);
-    purpleObstacle1->setBrush(QBrush(Qt::magenta)); // Purple color
-    purpleObstacle1->setPos(300, 350); // x, y coordinates in the scene
-    scene->addItem(purpleObstacle1);
-    obstacles.append(purpleObstacle1);
-    
-    StaticObstacle* purpleObstacle2 = new StaticObstacle(100, 50, 1);
-    purpleObstacle2->setIsBouncy(false);
-    purpleObstacle2->setBounceStrength(0.0f);
-    purpleObstacle2->setPlayerFriction(1.0f);
-    purpleObstacle2->setBrush(QBrush(Qt::magenta)); // Purple color
-    purpleObstacle2->setPos(700, 400); // x, y coordinates in the scene
-    scene->addItem(purpleObstacle2);
-    obstacles.append(purpleObstacle2);
-    
-    // Blue bouncy obstacles
-    StaticObstacle* blueObstacle1 = new StaticObstacle(100, 50, 0); // No damage
-    blueObstacle1->setIsBouncy(true);
-    blueObstacle1->setBounceStrength(1.2f); // Very bouncy
-    blueObstacle1->setPlayerFriction(0.8f);
-    blueObstacle1->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle1->setPos(500, 450); // x, y coordinates in the scene
-    scene->addItem(blueObstacle1);
-    obstacles.append(blueObstacle1);
-    
-    StaticObstacle* blueObstacle2 = new StaticObstacle(100, 50, 0); // No damage
-    blueObstacle2->setIsBouncy(true);
-    blueObstacle2->setBounceStrength(1.2f); // Very bouncy
-    blueObstacle2->setPlayerFriction(0.8f);
-    blueObstacle2->setBrush(QBrush(Qt::blue)); // Blue color
-    blueObstacle2->setPos(900, 450); // x, y coordinates in the scene
-    scene->addItem(blueObstacle2);
-    obstacles.append(blueObstacle2);
-    
-    // Add a moving obstacle that patrols
-    MovingObstacle* movingObstacle = new MovingObstacle(80, 40, 1);
-    movingObstacle->setBrush(QBrush(Qt::red));
-    movingObstacle->setMovementSpeed(2.0f);
-    movingObstacle->setPatrolPoints(QPointF(600, 200), QPointF(900, 200));
-    scene->addItem(movingObstacle);
-    obstacles.append(movingObstacle);
-    
-    // Add goal
-    goal = new QGraphicsPixmapItem(QPixmap(":/images/flag.png").scaled(50, 50));
-    goal->setPos(width - 100, 450);  // end of the level
-    scene->addItem(goal);
 }
+
 
 void Level::setupLevel2() {
     // Level 2 - harder layout with more obstacles
@@ -220,69 +168,7 @@ void Level::setupLevel2() {
     platforms.append(platform6);
     platforms.append(platform7);
     
-    // Create more obstacles - more dangerous ones
-    
-    // Purple obstacles (single use)
-    StaticObstacle* purpleObstacle1 = new StaticObstacle(70, 70, 2); // More damage
-    purpleObstacle1->setIsBouncy(false);
-    purpleObstacle1->setBrush(QBrush(Qt::magenta));
-    purpleObstacle1->setPos(300, 280);
-    scene->addItem(purpleObstacle1);
-    obstacles.append(purpleObstacle1);
-    
-    StaticObstacle* purpleObstacle2 = new StaticObstacle(70, 70, 2);
-    purpleObstacle2->setIsBouncy(false);
-    purpleObstacle2->setBrush(QBrush(Qt::magenta));
-    purpleObstacle2->setPos(1100, 230);
-    scene->addItem(purpleObstacle2);
-    obstacles.append(purpleObstacle2);
-    
-    // Blue bouncy obstacles
-    StaticObstacle* blueObstacle1 = new StaticObstacle(120, 50, 0);
-    blueObstacle1->setIsBouncy(true);
-    blueObstacle1->setBounceStrength(1.5f); // Extra bouncy
-    blueObstacle1->setBrush(QBrush(Qt::blue));
-    blueObstacle1->setPos(500, 430);
-    scene->addItem(blueObstacle1);
-    obstacles.append(blueObstacle1);
-    
-    StaticObstacle* blueObstacle2 = new StaticObstacle(120, 50, 0);
-    blueObstacle2->setIsBouncy(true);
-    blueObstacle2->setBounceStrength(1.5f);
-    blueObstacle2->setBrush(QBrush(Qt::blue));
-    blueObstacle2->setPos(1300, 430);
-    scene->addItem(blueObstacle2);
-    obstacles.append(blueObstacle2);
-    
-    // Add multiple moving obstacles with different patterns
-    
-    // Circular motion obstacle
-    MovingObstacle* circleObstacle = new MovingObstacle(60, 60, 2);
-    circleObstacle->setBrush(QBrush(Qt::red));
-    circleObstacle->setCircularMotion(800, 200, 100);
-    circleObstacle->setMovementSpeed(3.0f);
-    scene->addItem(circleObstacle);
-    obstacles.append(circleObstacle);
-    
-    // Patrolling obstacles
-    MovingObstacle* patrolObstacle1 = new MovingObstacle(100, 40, 1);
-    patrolObstacle1->setBrush(QBrush(Qt::red));
-    patrolObstacle1->setMovementSpeed(3.0f);
-    patrolObstacle1->setPatrolPoints(QPointF(400, 250), QPointF(600, 250));
-    scene->addItem(patrolObstacle1);
-    obstacles.append(patrolObstacle1);
-    
-    MovingObstacle* patrolObstacle2 = new MovingObstacle(100, 40, 1);
-    patrolObstacle2->setBrush(QBrush(Qt::red));
-    patrolObstacle2->setMovementSpeed(4.0f);
-    patrolObstacle2->setPatrolPoints(QPointF(1000, 200), QPointF(1300, 200));
-    scene->addItem(patrolObstacle2);
-    obstacles.append(patrolObstacle2);
-    
-    // Add goal
-    goal = new QGraphicsPixmapItem(QPixmap(":/images/flag.png").scaled(50, 50));
-    goal->setPos(width - 100, 450);
-    scene->addItem(goal);
+    // Create obstacles
 }
 
 int Level::getLevelNumber() const {

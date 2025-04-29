@@ -5,9 +5,8 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsView>
+#include "obstacle.h"
 #include "platform.h"
-#include "staticobstacle.h"
-#include "movingobstacle.h"
 #include "player.h"
 
 class Level {
