@@ -1,10 +1,15 @@
-#ifndef SCORESYSTEM_H
-#define SCORESYSTEM_H
-
-class ScoreSystem
-{
+#ifndef SCORE_H
+#define SCORE_H
+#include <QGraphicsTextItem>
+class ScoreSystem : public QGraphicsTextItem{
 public:
-    ScoreSystem();
+    ScoreSystem(QGraphicsItem * parent = 0);
+    void increasescore();
+    void decrementscore();
+    int getscore();
+    void resetscore();
+private:
+    int score;
 };
 
-#endif // SCORESYSTEM_H
+#endif // SCORE_H
