@@ -68,11 +68,7 @@ void MainWindow::setupGame()
     uiManager->startGameTimer();
 }
 
-void MainWindow::paintEvent(QPaintEvent *event)
-{
-    QPainter painter(this);
-    // Custom rendering if needed
-}
+
 
 void MainWindow::switchToLevel(int levelType)
 {

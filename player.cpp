@@ -2,14 +2,14 @@
 #include <QList>
 #include "player.h"
 #include "qgraphicsscene.h"
-#include "platform.h" // Add the include at the top of the file
+#include "platform.h"
 #include "obstacle.h"
 
 
 Player::Player()
     : health(3), speed(1), maxSpeed(5), friction(0.5), gravity(1), dashSpeed(10), dashDuration(150), length(50), width(30), jumpHeight(15),
     yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), floorY(500), gravityTimer(new QTimer(this)),
-    attackDuration(500), attackLaunchMagnitude(7), attackDistance(30), isAttacking(false), attackGraphic(nullptr), attackTimer(nullptr), attackCollisionTimer(nullptr),
+    attackTimer(nullptr), attackCollisionTimer(nullptr), isAttacking(false), attackDuration(500), attackLaunchMagnitude(7), attackGraphic(nullptr), attackDistance(30),
     attackDirectionX(0), attackDirectionY(0)
     // player stats, we can tweek until it feels right
 {
@@ -17,7 +17,7 @@ Player::Player()
     setBrush(QBrush(Qt::red));
     setFlag(QGraphicsItem::ItemIsFocusable);
     setFocus();
-    // creates player and makes it red and the focus
+    // creates player and makes it red and the focus for inputs
 
     connect(gravityTimer, &QTimer::timeout, this, &Player::applyGravity);
     gravityTimer->start(16);
@@ -36,13 +36,9 @@ void Player::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Up:
         break;
     case Qt::Key_Space:
-        // Immediately try to jump (more responsive than waiting for gravity update)
-        if (isOnGround || isOnPlatform) {
-            jump();
-        }
+
         break;
     case Qt::Key_Down:
-        // Handle dropping through platforms in the physics update
         break;
     case Qt::Key_M:
         performDash();
@@ -53,26 +49,29 @@ void Player::keyPressEvent(QKeyEvent *event) {
     }
     // this used to be how movement was handled but i started using keysHeld instead to make it smoother
     // some of it is probably deprecated, but i'm scared to touch this and break something, we can figure it out later
+    // nevermind, not deprecated, my pc almost blew up when i tried removing them. never touching this again
 }
 
 void Player::keyReleaseEvent(QKeyEvent *event) {
     keysHeld.remove(event->key());
-} //this part makes key releases register in the keysHeld
+} // this part makes key releases register in the keysHeld
 
 void Player::moveForward() {
     xVelocity += speed;
-} //holding forward increases players velocity by the magnitute of the speed value (positive for right)
+} // holding forward increases players velocity by the magnitute of the speed value (positive for right)
 
 void Player::moveBackward() {
     xVelocity -= speed;
-} //holding back decreases players velocity by the magnitute of the speed value (negative for left)
+} // holding back decreases players velocity by the magnitute of the speed value (negative for left)
 
 void Player::jump() {
     // Simple jump implementation - just set upward velocity
+    // might be worth considering changing from a pure setter to an incrementation, but in most cases its the same
     yVelocity = -jumpHeight;
     isOnGround = false;
     isOnPlatform = false;
     currentPlatform = nullptr;
+    // updates the flags for the gravity function
 }
 
 
@@ -81,111 +80,114 @@ bool Player::checkPlatformCollisions() {
     if (!scene()) {
         return false;
     }
+    // obviously, this is mostly useless unless something breaks
     
-    // Get all colliding items
     QList<QGraphicsItem*> collidingItems = scene()->collidingItems(this);
-    
-    // Reset platform status by default - we'll set it if we find we're on a platform
+    // full list of all collding items (thanks QT!)
+
     isOnPlatform = false;
     currentPlatform = nullptr;
     bool isOnObstacle = false;
+    // default values
     
-    // First check: Are we directly landing on a platform from above?
     qreal feetY = y() + rect().height();
-    qreal smallGap = 5.0; // Small gap to detect "about to land" or "just left" platform
+    qreal smallGap = std::abs(yVelocity + dashY) + 1.0;
+    // "smallGap" is just how far the player is expected to move in the next frame, plus a little extra for safety
+    // will use this later on to stop clipping through stuff
+
     
     for (QGraphicsItem* item : collidingItems) {
-        // Check for platforms first
         Platform* platform = dynamic_cast<Platform*>(item);
+        // check for platforms
         if (platform)
         {
             QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
             if (yVelocity > 0){
-            // Check if player is directly above platform
             if (feetY >= platformRect.top() - smallGap && feetY <= platformRect.top() + smallGap) {
-                // Player is directly on top of platform
+                    // checks if player is about to fall on a platform
                 
-                // For passthrough platforms, allow dropping if down key is pressed
                 if (platform->isPassthrough() && keysHeld.contains(Qt::Key_Down)) {
-                    // Allow player to drop through
+                    // check if the platform is passthrough and the player is holding down
                     continue;
+                    // allow player to drop through
                 }
                 
-                // Otherwise, place player on top of platform and stop falling
                 setY(platformRect.top() - rect().height());
                 yVelocity = 0;
                 isOnPlatform = true;
                 currentPlatform = platform;
+                // otherwise stops the player from falling
             }
         }
-            // Check for side collisions with solid platforms
             if (platform->isSolid()) {
                 QRectF playerRect = mapToScene(rect()).boundingRect();
+                // checks for side collisions with solid platforms
                 
-                // If player collides with platform sides
                 if (playerRect.right() > platformRect.left() && playerRect.left() < platformRect.right() &&
                     playerRect.bottom() > platformRect.top() + smallGap && playerRect.top() < platformRect.bottom()) {
+                    // checks if player is about to collide with platform side
+                    // just realized we might need to add a horizonral small gap function, but we're probably fine
                     
-                    // Determine if collision is from left or right
                     if (playerRect.right() - platformRect.left() < 10) {
-                        // Player hit platform from the left
+                        // checks what direction collision is coming from
                         setX(platformRect.left() - rect().width());
                         xVelocity = 0;
+                        // the player stops
                     }
                     else if (platformRect.right() - playerRect.left() < 10) {
-                        // Player hit platform from the right
                         setX(platformRect.right());
                         xVelocity = 0;
+                        // the player also stops but from the other direction now
                     }
                     else if (yVelocity < 0 && playerRect.top() < platformRect.bottom() && 
                              playerRect.top() > platformRect.top()) {
-                        // Player is hitting platform ceiling
+                        // checks if the player is hitting the platform ceiling
                         setY(platformRect.bottom());
                         yVelocity = 0;
+                        // stop the player
                     }
                 }
             }
         }
         
-        // Now check for obstacles
         Obstacle* obstacle = dynamic_cast<Obstacle*>(item);
+        // we should probably consolidate obstacles and platforms, but that will take too much time, we'll just do the whole thing twice
         if (obstacle) {
             QRectF obstacleRect = obstacle->mapToScene(obstacle->rect()).boundingRect();
             QRectF playerRect = mapToScene(rect()).boundingRect();
             
-            // Check if player is directly above obstacle (standing on it)
             if (feetY >= obstacleRect.top() - smallGap && feetY <= obstacleRect.top() + smallGap) {
-                // Place player on top of obstacle and stop falling
+                // checks if player is about to fall on a platform - i mean obstacle
                 setY(obstacleRect.top() - rect().height());
                 yVelocity = 0;
                 isOnObstacle = true;
-                
-                // Check if this is a bouncy obstacle
+                // no need to check for passthrough, directly stop the player
+
                 Obstacle* Obstacle = dynamic_cast<class Obstacle*>(obstacle);
                 if (Obstacle) {
-                    // Check if the obstacle is stompable
                     if (obstacle->getIsStompable()) {
-                        // This is a stompable obstacle - delete it when standing on it
+                        // stomp check
                         Obstacle->deleteObstacle();
-                    }
-                    // Check for purple obstacles (damage=1 and not bouncy) to delete them when standing on them
-                    else if (Obstacle->getDamage() > 0 && !Obstacle->getIsBouncy()) {
-                        // This is a purple obstacle - delete it when standing on it
-                        Obstacle->deleteObstacle();
+                        // stomp done, obstacle gone
                     }
                     else if (Obstacle->getIsBouncy()) {
-                        // Apply bounce - negative velocity with bounce strength
+                        // bounce check
                         yVelocity = -jumpHeight * Obstacle->getBounceStrength();
-                        isOnObstacle = false; // We're bouncing, not standing
+                        // boing
+                        isOnObstacle = false;
+                        // we're bouncing, not standing
                     }
                 }
                 
-                // Only call collideWithPlayer when we want to apply damage effects
-                // For top collisions with obstacles without damage, we don't need to trigger damage
                 if (obstacle->getDamage() > 0) {
                     obstacle->collideWithPlayer(this);
+                    // player damage time
                 }
             }
+
+            // this next part is all claude since i struggled to figure this out and we're out of time to have fun
+            // start of claude code
+
             // Check for side collisions with obstacles
             else if (playerRect.right() > obstacleRect.left() && 
                      playerRect.left() < obstacleRect.right() &&
@@ -219,19 +221,23 @@ bool Player::checkPlatformCollisions() {
                     obstacle->collideWithPlayer(this);
                 }
             }
+
+            // end of claude code
         }
     }
     
     return isOnPlatform || isOnObstacle;
+
+    //update the thing
 }
 
 bool Player::canDropThroughPlatform() {
-    // Can drop through if pressing down
     return keysHeld.contains(Qt::Key_Down);
+    // can drop through if pressing down, simple enough
 }
 
 void Player::performDash()
-// I decided to add a dash because we need the bonus and because its more fun this way. this was probably the hardest part
+// i decided to add a dash because we need the bonus and because its more fun this way. this was probably the hardest part
 {
     if (isDashing || !canDash) return;
     //prevents infinite dashing
@@ -251,7 +257,7 @@ void Player::performDash()
     float length = std::sqrt(dirX * dirX + dirY * dirY);
     dirX /= length;
     dirY /= length;
-    // vector equation to get the unit circle normalized vector, I'm assuming you took calculus 2, either way don't worry about this
+    // vector equation to get the unit circle normalized vector, I'm assuming you took calc 2, either way don't worry about this
 
     dashX = dirX * dashSpeed;
     dashY = dirY * dashSpeed;
@@ -281,92 +287,94 @@ void Player::applyGravity()
 // i turned this more into "apply physics" than "apply gravity", but i can't be bothered to change the name
 // the important thing is that it handles all movement now, not just vertical movement
 {
-    // Store previous states
-    bool wasOnGround = isOnGround;
-    bool wasOnPlatform = isOnPlatform;
-    
-    // Handle jumping with better key detection
-    // Using Key_Space for jumping
+    //  bool wasOnGround = isOnGround;
+    //  bool wasOnPlatform = isOnPlatform;
+    //  // stores previous states
+
     if ((keysHeld.contains(Qt::Key_Space)) &&
         (isOnGround || isOnPlatform)) {
-        // Jump only if we're on a solid surface
         jump();
     }
-    
-    // Apply gravity if not dashing
+    // jumps only if we're on a solid surface
+    // will probably need to update to include obstacles, depending on how we decide to use those
+
     if (!isDashing) {
         yVelocity += gravity;
     }
+    // applies gravity unless dashing
 
-    // Handle left/right movement
     if (keysHeld.contains(Qt::Key_Left)) {
         moveBackward();
     }
     if (keysHeld.contains(Qt::Key_Right)) {
         moveForward();
     }
+    // handles left/right movement
 
-    // Update position
     setX(x() + xVelocity + dashX);
     setY(y() + yVelocity + dashY);
-    
+    // updates position
+
     // Update attack position if attacking
     if (isAttacking && attackGraphic) {
         updateAttackPosition();
     }
-    
-    // Handle floor collision first (simpler)
+
     isOnGround = false;
     if (y() >= floorY) {
         setY(floorY);
         yVelocity = 0;
         isOnGround = true;
     }
-    
-    // Only check platform collisions if we're not on ground
+    // handles floor collision first (way simpler this way)
+
     bool onSolidSurface = isOnGround;
     if (!isOnGround) {
         onSolidSurface = checkPlatformCollisions();
     }
-    
-    // Reset dash ability when landing on any solid surface
-    bool justLanded = (isOnGround && !wasOnGround) || (isOnPlatform && !wasOnPlatform);
+    // checks platform collisions only if we're not on ground
+
+    //bool justLanded = (isOnGround && !wasOnGround) || (isOnPlatform && !wasOnPlatform);
     if (onSolidSurface && !canDash && !isDashing) {
         canDash = true;
         setBrush(QBrush(Qt::red));
-    }
-    
-    // Stop dashing when landing
-    if (justLanded && isDashing) {
-        isDashing = false;
-        dashX = 0;
-        dashY = 0;
-        
-        if (dashTimer && dashTimer->isActive()) {
-            dashTimer->stop();
-        }
+        // resets the dash when landing on a solid surface
+        // again, might need to update to include obstacles
     }
 
-    // Apply friction if not dashing
+    //if (justLanded && isDashing) {
+    //    isDashing = false;
+    //    dashX = 0;
+    //    dashY = 0;
+    //    // stops dashing when landing
+    //    if (dashTimer && dashTimer->isActive()) {
+    //        dashTimer->stop();
+    //    }
+    //}
+
+    // will need to update above function to make it more fun
+
     if (!isDashing) {
         float currentFriction = friction;
+        // apply friction if not dashing
 
         if (std::abs(xVelocity) > maxSpeed) {
             currentFriction += (std::abs(xVelocity) - maxSpeed) * 0.2;
         }
+        // increases friction if above max speed
 
         if (xVelocity > 0) {
             xVelocity -= currentFriction;
             if (xVelocity < 0) xVelocity = 0;
+            // applies friction
         } else if (xVelocity < 0) {
             xVelocity += currentFriction;
             if (xVelocity > 0) xVelocity = 0;
+            // applies friction the other way around
         }
     }
-    
-    // Debug info - can be removed after fixing
-    // qDebug() << "isOnGround:" << isOnGround << "isOnPlatform:" << isOnPlatform
-    //          << "canJump:" << (isOnGround || isOnPlatform) << "yVel:" << yVelocity;
+
+
 }
     
 void Player::takeDamage(int amount)

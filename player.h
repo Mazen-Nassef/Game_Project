@@ -85,8 +85,8 @@ private:
     bool isAttacking = false;
     float attackDuration = 500; // Default half a second
     float attackLaunchMagnitude = 7; // How far the player gets launched after hitting something
-    float attackDistance = 30; // How far the attack appears from the player
     QGraphicsPathItem *attackGraphic = nullptr; // Visual representation of attack
+    float attackDistance = 30; // How far the attack appears from the player
     float attackDirectionX = 0;
     float attackDirectionY = 0;
 };
