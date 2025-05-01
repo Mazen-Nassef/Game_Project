@@ -6,8 +6,6 @@ Level::Level(QGraphicsScene* scene) {
     this->scene = scene;
     level_number = 1;
     level_type = LEVEL_1;
-    width = 2000;
-    height = 600;
     goal = nullptr;
     player = nullptr;
     
@@ -60,10 +58,6 @@ void Level::setScene(QGraphicsScene* scene) {
     
     this->scene = scene;
     
-    // Set scene dimensions
-    if (scene) {
-        scene->setSceneRect(0, 0, width, height);
-    }
 }
 
 void Level::setLevelType(LevelType type) {
@@ -91,6 +85,11 @@ void Level::createLevel() {
 }
 
 void Level::setupLevel1() {
+    width = 5000;
+    height = 600;
+
+    scene->setSceneRect(0 , 0 , width , height);
+
     // Create player
     player = new Player();
     player->setPos(100, 400);
@@ -123,6 +122,12 @@ void Level::setupLevel1() {
 
 
 void Level::setupLevel2() {
+
+    width = 2500;
+    height = 800;
+
+    scene->setSceneRect(0, 0, width, height);
+
     // Level 2 - harder layout with more obstacles
     
     // Create player
