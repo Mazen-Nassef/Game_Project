@@ -249,18 +249,17 @@ void Player::performDash()
     if (keysHeld.contains(Qt::Key_Down))  dirY += 1;
     // vector (math vector not DS vector) to determine dash direction
 
-    if (dirX == 0 && dirY == 0)
-        return;
-    // nothing happens if the dash direction is 0
-
-
     float length = std::sqrt(dirX * dirX + dirY * dirY);
     dirX /= length;
     dirY /= length;
     // vector equation to get the unit circle normalized vector, I'm assuming you took calc 2, either way don't worry about this
 
-    dashX = dirX * dashSpeed;
-    dashY = dirY * dashSpeed;
+    if (length == 0)
+        return;
+    // nothing happens if the dash direction is 0
+
+    xVelocity = dirX * dashSpeed;
+    yVelocity = dirY * dashSpeed;
     // dashes in the direction held with the dash speed stat
 
     isDashing = true;
@@ -270,7 +269,7 @@ void Player::performDash()
     setBrush(QBrush(Qt::blue));
     // makes the player blue, basic visual indicator for when the player can't dash
 
-    yVelocity = 0;
+    // yVelocity = 0;
 
     if (!dashTimer) dashTimer = new QTimer(this);
     dashTimer->setSingleShot(true);
@@ -311,8 +310,8 @@ void Player::applyGravity()
     }
     // handles left/right movement
 
-    setX(x() + xVelocity + dashX);
-    setY(y() + yVelocity + dashY);
+    setX(x() + xVelocity);
+    setY(y() + yVelocity);
     // updates position
 
     // Update attack position if attacking
@@ -335,7 +334,7 @@ void Player::applyGravity()
     // checks platform collisions only if we're not on ground
 
     //bool justLanded = (isOnGround && !wasOnGround) || (isOnPlatform && !wasOnPlatform);
-    if (onSolidSurface && !canDash && !isDashing) {
+    if (onSolidSurface && !canDash) {
         canDash = true;
         setBrush(QBrush(Qt::red));
         // resets the dash when landing on a solid surface
