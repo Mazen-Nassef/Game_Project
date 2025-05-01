@@ -103,6 +103,7 @@ void Level::setupLevel1() {
     player = new Player();
     player->setPos(100, 400);
     scene->addItem(player);
+    player->setFocus();
     
     // Create main floor platform (solid)
     Platform* floor = new Platform(0, 500, width, 100, Platform::PlatformType::Solid, Qt::darkGreen);
@@ -133,7 +134,7 @@ void Level::setupLevel1() {
 void Level::setupLevel2() {
 
     width = 2500;
-    height = 800;
+    height = 600;
 
     scene->setSceneRect(0, 0, width, height);
 
@@ -143,6 +144,7 @@ void Level::setupLevel2() {
     player = new Player();
     player->setPos(100, 400);
     scene->addItem(player);
+    player->setFocus();
     
     // Create main floor platform (solid) but with gaps
     Platform* floor1 = new Platform(0, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
@@ -189,6 +191,12 @@ void Level::setupLevel3() {
     width = 1000;
     height = 1000;
     scene->setSceneRect(0, 0, width, height);
+
+    player = new Player();
+    player->setPos(100, 400);
+    scene->addItem(player);
+    player->setFocus();
+
     // TODO: Add platforms, obstacles, etc.
 }
 
@@ -196,6 +204,12 @@ void Level::setupLevel4() {
     width = 1000;
     height = 1000;
     scene->setSceneRect(0, 0, width, height);
+
+    player = new Player();
+    player->setPos(100, 400);
+    scene->addItem(player);
+    player->setFocus();
+
     // TODO: Add platforms, obstacles, etc.
 }
 
@@ -203,6 +217,12 @@ void Level::setupLevel5() {
     width = 1000;
     height = 1000;
     scene->setSceneRect(0, 0, width, height);
+
+    player = new Player();
+    player->setPos(100, 400);
+    scene->addItem(player);
+    player->setFocus();
+
     // TODO: Add platforms, obstacles, etc.
 }
 
@@ -269,7 +289,25 @@ void Level::set_damageM() {
 
 void Level::followPlayer(QGraphicsView* view) {
     if (!view || !player) return;
-    
-    int playerX = player->x();
-    view->centerOn(playerX, 300); // vertical center is fixed
+
+    // Dimensions of the viewport
+    int viewHeight = view->viewport()->height();
+    int viewWidth = view->viewport()->width();
+
+    // Player position
+    QPointF playerPos = player->pos();
+
+    // Clamp the center Y so that the view never scrolls below the scene
+    double halfViewHeight = viewHeight / 2.0;
+    double maxY = height - halfViewHeight;
+    double minY = halfViewHeight;
+    double centerY = std::clamp(playerPos.y(), minY, maxY);
+
+    // Clamp the center X similarly if desired (optional)
+    double halfViewWidth = viewWidth / 2.0;
+    double maxX = width - halfViewWidth;
+    double minX = halfViewWidth;
+    double centerX = std::clamp(playerPos.x(), minX, maxX);
+
+    view->centerOn(centerX, centerY);
 }
