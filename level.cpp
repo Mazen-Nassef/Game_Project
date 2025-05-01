@@ -182,7 +182,7 @@ void Level::setupLevel2() {
     platforms.append(platform6);
     platforms.append(platform7);
     
-    // Create obstacles
+    // TODO: Create obstacles
 }
 
 void Level::setupLevel3() {
@@ -239,6 +239,18 @@ void Level::update_level() {
     // Switch to level 2 if we're on level 1
     if (level_type == LEVEL_1) {
         level_type = LEVEL_2;
+        createLevel();
+    }
+    if (level_type == LEVEL_2) {
+        level_type = LEVEL_3;
+        createLevel();
+    }
+    if (level_type == LEVEL_3) {
+        level_type = LEVEL_4;
+        createLevel();
+    }
+    if (level_type == LEVEL_4) {
+        level_type = LEVEL_5;
         createLevel();
     }
 }

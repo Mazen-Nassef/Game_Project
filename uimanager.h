@@ -32,6 +32,9 @@ private:
     QLabel* messageLabel = nullptr;
     QPushButton* level1Button = nullptr;
     QPushButton* level2Button = nullptr;
+    QPushButton* level3Button = nullptr;
+    QPushButton* level4Button = nullptr;
+    QPushButton* level5Button = nullptr;
 
     // Game timer
     QTimer* gameTimer = nullptr;

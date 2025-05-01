@@ -5,37 +5,84 @@
 
 Obstacle::Obstacle(QGraphicsItem *parent)
     : QObject(), QGraphicsRectItem(parent),
-    length(50), width(50), damage(1), isLethal(true),
-    isBreakable(false), breakHitpoints(0),
-    color(Qt::gray), hasEffect(false),
-    effectType(0), effectDuration(0), isStompable(false),
-    isBouncy(false), bounceStrength(0.0f),
-    isClimbable(false), isPushable(false), playerFriction(1.0f),
-    moveSpeed(2.0f), isPatrolling(false), pattern(MovementPattern::Linear),
-    startPosition(0,0), endPosition(0,0), moveTimer(nullptr),
-    angle(0.0f), radius(0.0f)
+    length(50),
+    width(50),
+    damage(0),
+    isLethal(false),
+    isBreakable(false),
+    breakHitpoints(0),
+    color(Qt::gray),
+    hasEffect(false),
+    effectType(0),
+    effectDuration(0),
+    isStompable(false),
+    isBouncy(false),
+    bounceStrength(0.0f),
+    isClimbable(false),
+    isPushable(false),
+    playerFriction(1.0f),
+    moveSpeed(2.0f),
+    isPatrolling(false),
+    pattern(MovementPattern::Linear),
+    startPosition(0,0),
+    endPosition(0,0),
+    moveTimer(nullptr),
+    angle(0.0f),
+    radius(0.0f)
 {
     setRect(0, 0, length, width);
     setBrush(QBrush(color));
 }
 
-Obstacle::Obstacle(int length_, int width_, int damage_, bool lethal,
-                   bool breakable, int breakHP, QColor col,
-                   bool effect, int effType, int effDuration,
-                   bool stompable, bool bouncy, float bounceStr,
-                   bool climbable, bool pushable, float friction,
-                   MovementPattern pattern_, float speed,
-                   const QPointF &startPos, const QPointF &endPos,
-                   float circularRadius, QGraphicsItem *parent)
-    : QObject(), QGraphicsRectItem(parent),
-    length(length_), width(width_), damage(damage_),
-    isLethal(lethal), isBreakable(breakable), breakHitpoints(breakHP),
-    color(col), hasEffect(effect), effectType(effType),
-    effectDuration(effDuration), isStompable(stompable),
-    isBouncy(bouncy), bounceStrength(bounceStr),
-    isClimbable(climbable), isPushable(pushable), playerFriction(friction),
-    moveSpeed(speed), isPatrolling(pattern_==MovementPattern::Patrol), pattern(pattern_),
-    startPosition(startPos), endPosition(endPos), angle(0.0f), radius(circularRadius)
+Obstacle::Obstacle(
+    int length_,
+    int width_,
+    int damage_,
+    bool lethal,
+    bool breakable,
+    int breakHP,
+    QColor col,
+    bool effect,
+    int effType,
+    int effDuration,
+    bool stompable,
+    bool bouncy,
+    float bounceStr,
+    bool climbable,
+    bool pushable,
+    float friction,
+    MovementPattern pattern_,
+    float speed,
+    const QPointF &startPos,
+    const QPointF &endPos,
+    float circularRadius,
+    QGraphicsItem *parent)
+    :
+    QObject(),
+    QGraphicsRectItem(parent),
+    length(length_),
+    width(width_),
+    damage(damage_),
+    isLethal(lethal),
+    isBreakable(breakable),
+    breakHitpoints(breakHP),
+    color(col),
+    hasEffect(effect),
+    effectType(effType),
+    effectDuration(effDuration),
+    isStompable(stompable),
+    isBouncy(bouncy),
+    bounceStrength(bounceStr),
+    isClimbable(climbable),
+    isPushable(pushable),
+    playerFriction(friction),
+    moveSpeed(speed),
+    isPatrolling(pattern_==MovementPattern::Patrol),
+    pattern(pattern_),
+    startPosition(startPos),
+    endPosition(endPos),
+    angle(0.0f),
+    radius(circularRadius)
 {
     setRect(0, 0, length, width);
     setBrush(QBrush(color));
@@ -129,7 +176,7 @@ void Obstacle::setMovementPattern(MovementPattern pat) // A setter for the movem
 }
 
 void Obstacle::setPatrolPoints(const QPointF &start, const QPointF &end) // A setter for the starting point and ending point
-                                                                        //for obstacles moving in a patrolling pattern.
+//for obstacles moving in a patrolling pattern.
 {
     startPosition = start;
     endPosition = end;

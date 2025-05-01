@@ -54,6 +54,9 @@ void UIManager::setupUI(QWidget* parent) {
     // Create level switch buttons
     level1Button = new QPushButton("Level 1", parent);
     level2Button = new QPushButton("Level 2", parent);
+    level3Button = new QPushButton("Level 3", parent);
+    level4Button = new QPushButton("Level 4", parent);
+    level5Button = new QPushButton("Level 5", parent);
     
     connect(level1Button, &QPushButton::clicked, this, [this]() {
         emit levelSwitchRequested(Level::LEVEL_1);
@@ -62,13 +65,31 @@ void UIManager::setupUI(QWidget* parent) {
     connect(level2Button, &QPushButton::clicked, this, [this]() {
         emit levelSwitchRequested(Level::LEVEL_2);
     });
+
+    connect(level3Button, &QPushButton::clicked, this, [this]() {
+        emit levelSwitchRequested(Level::LEVEL_3);
+    });
+
+    connect(level4Button, &QPushButton::clicked, this, [this]() {
+        emit levelSwitchRequested(Level::LEVEL_4);
+    });
     
+    connect(level5Button, &QPushButton::clicked, this, [this]() {
+        emit levelSwitchRequested(Level::LEVEL_5);
+    });
+
     // Position the buttons
     level1Button->move(10, parent->height() - 40);
     level2Button->move(90, parent->height() - 40);
+    level3Button->move(170, parent->height() - 40);
+    level4Button->move(250, parent->height() - 40);
+    level5Button->move(330, parent->height() - 40);
     
     level1Button->show();
     level2Button->show();
+    level3Button->show();
+    level4Button->show();
+    level5Button->show();
 }
 
 void UIManager::positionLabels(QGraphicsView* view) {
