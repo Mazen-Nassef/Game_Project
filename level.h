@@ -13,8 +13,12 @@ class Level {
 public:
     enum LevelType {
         LEVEL_1,
-        LEVEL_2
+        LEVEL_2,
+        LEVEL_3,
+        LEVEL_4,
+        LEVEL_5
     };
+
 
 private:
     int level_number;
@@ -42,6 +46,9 @@ private:
     // Level setup methods
     void setupLevel1();
     void setupLevel2();
+    void setupLevel3();
+    void setupLevel4();
+    void setupLevel5();
 
 public:
     Level(QGraphicsScene* scene = nullptr);

@@ -81,6 +81,15 @@ void Level::createLevel() {
         case LEVEL_2:
             setupLevel2();
             break;
+        case LEVEL_3:
+            setupLevel3();
+            break;
+        case LEVEL_4:
+            setupLevel4();
+            break;
+        case LEVEL_5:
+            setupLevel5();
+            break;
     }
 }
 
@@ -174,6 +183,27 @@ void Level::setupLevel2() {
     platforms.append(platform7);
     
     // Create obstacles
+}
+
+void Level::setupLevel3() {
+    width = 1000;
+    height = 1000;
+    scene->setSceneRect(0, 0, width, height);
+    // TODO: Add platforms, obstacles, etc.
+}
+
+void Level::setupLevel4() {
+    width = 1000;
+    height = 1000;
+    scene->setSceneRect(0, 0, width, height);
+    // TODO: Add platforms, obstacles, etc.
+}
+
+void Level::setupLevel5() {
+    width = 1000;
+    height = 1000;
+    scene->setSceneRect(0, 0, width, height);
+    // TODO: Add platforms, obstacles, etc.
 }
 
 int Level::getLevelNumber() const {
