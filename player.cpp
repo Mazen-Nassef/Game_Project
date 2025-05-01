@@ -8,7 +8,7 @@
 
 Player::Player()
     : health(3), speed(1), maxSpeed(5), friction(0.5), gravity(1), dashSpeed(10), dashDuration(150), length(50), width(30), jumpHeight(15),
-    yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), floorY(500), gravityTimer(new QTimer(this)),
+    yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), gravityTimer(new QTimer(this)),
     attackTimer(nullptr), attackCollisionTimer(nullptr), isAttacking(false), attackDuration(500), attackLaunchMagnitude(7), attackGraphic(nullptr), attackDistance(30),
     attackDirectionX(0), attackDirectionY(0)
     // player stats, we can tweek until it feels right
@@ -122,12 +122,12 @@ bool Player::checkPlatformCollisions() {
             if (platform->isSolid()) {
                 QRectF playerRect = mapToScene(rect()).boundingRect();
                 // checks for side collisions with solid platforms
-                
+
                 if (playerRect.right() > platformRect.left() && playerRect.left() < platformRect.right() &&
                     playerRect.bottom() > platformRect.top() + smallGap && playerRect.top() < platformRect.bottom()) {
                     // checks if player is about to collide with platform side
                     // just realized we might need to add a horizonral small gap function, but we're probably fine
-                    
+
                     if (playerRect.right() - platformRect.left() < 10) {
                         // checks what direction collision is coming from
                         setX(platformRect.left() - rect().width());
@@ -139,7 +139,7 @@ bool Player::checkPlatformCollisions() {
                         xVelocity = 0;
                         // the player also stops but from the other direction now
                     }
-                    else if (yVelocity < 0 && playerRect.top() < platformRect.bottom() && 
+                    else if (yVelocity < 0 && playerRect.top() < platformRect.bottom() &&
                              playerRect.top() > platformRect.top()) {
                         // checks if the player is hitting the platform ceiling
                         setY(platformRect.bottom());
@@ -250,13 +250,13 @@ void Player::performDash()
     // vector (math vector not DS vector) to determine dash direction
 
     float length = std::sqrt(dirX * dirX + dirY * dirY);
-    dirX /= length;
-    dirY /= length;
-    // vector equation to get the unit circle normalized vector, I'm assuming you took calc 2, either way don't worry about this
-
     if (length == 0)
         return;
     // nothing happens if the dash direction is 0
+
+    dirX /= length;
+    dirY /= length;
+    // vector equation to get the unit circle normalized vector, I'm assuming you took calc 2, either way don't worry about this
 
     xVelocity = dirX * dashSpeed;
     yVelocity = dirY * dashSpeed;
@@ -320,12 +320,6 @@ void Player::applyGravity()
     }
 
     isOnGround = false;
-    if (y() >= floorY) {
-        setY(floorY);
-        yVelocity = 0;
-        isOnGround = true;
-    }
-    // handles floor collision first (way simpler this way)
 
     bool onSolidSurface = isOnGround;
     if (!isOnGround) {
@@ -372,7 +366,29 @@ void Player::applyGravity()
             // applies friction the other way around
         }
     }
+    // Get current position
+    QPointF pos = this->pos();
 
+    // Get scene boundaries (assumes Level sets scene rect correctly)
+    QRectF bounds = scene()->sceneRect();
+
+    // Clamp X
+    if (pos.x() < bounds.left())
+        pos.setX(bounds.left());
+    else if (pos.x() + boundingRect().width() > bounds.right())
+        pos.setX(bounds.right() - boundingRect().width());
+
+    // Clamp Y
+    if (pos.y() < bounds.top())
+        pos.setY(bounds.top());
+    else if (pos.y() + boundingRect().height() > bounds.bottom()) {
+        pos.setY(bounds.bottom() - boundingRect().height());
+        // If the player falls below the bottom boundary, call reset
+        reset();
+    }
+
+    // Set clamped position
+    setPos(pos);
 
 }
     

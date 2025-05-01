@@ -188,14 +188,19 @@ void Level::setupLevel2() {
 }
 
 void Level::setupLevel3() {
-    width = 1000;
-    height = 1000;
+    width = 800;
+    height = 5000;
     scene->setSceneRect(0, 0, width, height);
 
     player = new Player();
     player->setPos(100, 400);
     scene->addItem(player);
     player->setFocus();
+
+    Platform* floor = new Platform(0, 550, width, 200, Platform::PlatformType::Solid, Qt::darkGreen);
+
+    scene->addItem(floor);
+    platforms.append(floor);
 
     // TODO: Add platforms, obstacles, etc.
 }
