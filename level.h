@@ -5,6 +5,7 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsView>
+#include "enemy.h"
 #include "obstacle.h"
 #include "platform.h"
 #include "player.h"
@@ -37,6 +38,7 @@ private:
     QGraphicsScene* scene;
     QList<Platform*> platforms;
     QList<Obstacle*> obstacles;
+     QList<Enemy*> enemies;
     QGraphicsPixmapItem* goal;
     Player* player;
     
@@ -57,6 +59,8 @@ public:
     // Configure the level
     void setLevelType(LevelType type);
     void setScene(QGraphicsScene* scene);
+
+    void removeEnemy(Enemy* enemy);
     
     // Create the level with the current configuration
     void createLevel();

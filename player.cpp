@@ -1,6 +1,7 @@
 #include <QBrush>
 #include <QList>
 #include "player.h"
+#include "enemy.h"
 #include "qgraphicsscene.h"
 #include "platform.h"
 #include "obstacle.h"
@@ -506,6 +507,14 @@ void Player::checkAttackCollision()
     for (QGraphicsItem* item : collidingItems) {
         // Skip collision with player itself
         if (item == this) continue;
+
+        Enemy* enemy = dynamic_cast<Enemy*>(item);
+        if (enemy) {
+            enemy->takeDamage(1);  // Deal 1 damage
+            xVelocity = -attackDirectionX * attackLaunchMagnitude;
+            yVelocity = -attackDirectionY * attackLaunchMagnitude;
+            continue;
+        }
         
         // Check for platforms and obstacles
         if (dynamic_cast<Platform*>(item) || dynamic_cast<Obstacle*>(item)) {

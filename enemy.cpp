@@ -1,54 +1,34 @@
-#include <QGraphicsPixmapItem>
-#include <QGraphicsScene>
-#include <QTimer>
-#include <QObject>
-#include "ScoreSystem.h"
-#include "player.h"
 #include "enemy.h"
-Enemy::Enemy(QGraphicsScene *scene, ObstacleType type, ScoreSystem *newscore, int speed, int h, int start, int end)
-    : scene(scene), type(type), speed(speed), setscore(newscore), height(h), starting(start), ending(end){
+#include "level.h"
+#include "qgraphicsscene.h"
+#include <QBrush>
 
-    setPixmap(QPixmap("C:Users/LOQ/Desktop/Game_Project/goomba_super_mario.webp"));
-    setScale(0.05);
-    scene->addItem(this);
-    setPos(starting, height);
-    scene->update();
-
-    if (type == Moving) {
-        QTimer *timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, this, &Enemy::move);
-        timer->start(50);
-    }
-    scene->update();
+// Constructor for Enemy object
+Enemy::Enemy(QGraphicsItem *parent)
+    : Obstacle(50, 50, 0, false, false, 0, Qt::red, false, 0, 0, false, false, 0.0f,
+               false, false, 1.0f, MovementPattern::Linear, 0.0f, QPointF(), QPointF(), 0.0f, parent),
+    health(1) // Initialize with 1 HP; adjust if needed
+{
+    setBrush(QBrush(Qt::red)); // Optional visual distinction
 }
 
-void Enemy::move() {
-    if (type == Moving) {
-        setPos(x() - speed, y());
-
-        // for (QGraphicsItem *item : collidingItems()) {
-        //     if (item->type() == QGraphicsPixmapItem::Type) {
-        //         setscore->decrementscore();
-        //         scene->removeItem(this);
-        //         delete this;
-        //         return;
-        //     }
-        // }
-
-
-        if (x() <= ending || x() >= starting) {
-            //this->setPos(starting, height);
-            // scene->removeItem(this);
-            // delete this;
-            speed -= 2*speed;
+void Enemy::takeDamage(int amount)
+{
+    health.takeDamage(amount);
+    if (isDead()) {
+        // Remove the enemy from the level's enemies list before deletion
+        Level* level = dynamic_cast<Level*>(scene()); // Assuming you're using a Level class to manage the scene
+        if (level) {
+            level->removeEnemy(this); // Implement a method to remove enemies from the level's list
         }
+
+        scene()->removeItem(this);
+        this->deleteLater(); // Safely delete after the removal
     }
 }
 
-bool Enemy::checkCollisionWithPlayer(Player *mainplayer) {
-    if (collidesWithItem(mainplayer)) {
-
-        return true;
-    }
-    return false;
+// Check if the enemy's health is 0 or below
+bool Enemy::isDead() const
+{
+    return health.get() <= 0;
 }

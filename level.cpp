@@ -1,4 +1,5 @@
 #include "level.h"
+#include "enemy.h"
 #include <QGraphicsView>
 #include <QBrush>
 
@@ -8,7 +9,7 @@ Level::Level(QGraphicsScene* scene) {
     level_type = LEVEL_1;
     goal = nullptr;
     player = nullptr;
-    
+
     set_frequencyM();
     set_velocityM();
     set_damageM();
@@ -20,28 +21,38 @@ Level::~Level() {
 
 void Level::clearLevel() {
     if (!scene) return;
-    
+
     // Clear platforms
     for (auto platform : platforms) {
         scene->removeItem(platform);
         delete platform;
     }
     platforms.clear();
-    
+
     // Clear obstacles
     for (auto obstacle : obstacles) {
         scene->removeItem(obstacle);
         delete obstacle;
     }
     obstacles.clear();
-    
+
+    // Clear enemies and remove them from the scene
+    for (auto enemy : enemies) {
+        if (scene->items().contains(enemy)) {
+            scene->removeItem(enemy);
+        }
+        removeEnemy(enemy); // Ensure enemy is removed from the enemies list
+        enemy->deleteLater();
+    }
+    enemies.clear();
+
     // Clear goal
     if (goal) {
         scene->removeItem(goal);
         delete goal;
         goal = nullptr;
     }
-    
+
     // Clear player
     if (player) {
         scene->removeItem(player);
@@ -50,14 +61,18 @@ void Level::clearLevel() {
     }
 }
 
+void Level::removeEnemy(Enemy* enemy) {
+    // Remove the enemy from the enemies list
+    enemies.removeOne(enemy);
+}
+
 void Level::setScene(QGraphicsScene* scene) {
     // Clear old scene if it exists
     if (this->scene) {
         clearLevel();
     }
-    
+
     this->scene = scene;
-    
 }
 
 void Level::setLevelType(LevelType type) {
@@ -66,30 +81,30 @@ void Level::setLevelType(LevelType type) {
 
 void Level::createLevel() {
     if (!scene) return;
-    
+
     // Clear any existing level elements
     clearLevel();
-    
+
     // Set scene dimensions
     scene->setSceneRect(0, 0, width, height);
-    
+
     // Create level based on type
     switch (level_type) {
-        case LEVEL_1:
-            setupLevel1();
-            break;
-        case LEVEL_2:
-            setupLevel2();
-            break;
-        case LEVEL_3:
-            setupLevel3();
-            break;
-        case LEVEL_4:
-            setupLevel4();
-            break;
-        case LEVEL_5:
-            setupLevel5();
-            break;
+    case LEVEL_1:
+        setupLevel1();
+        break;
+    case LEVEL_2:
+        setupLevel2();
+        break;
+    case LEVEL_3:
+        setupLevel3();
+        break;
+    case LEVEL_4:
+        setupLevel4();
+        break;
+    case LEVEL_5:
+        setupLevel5();
+        break;
     }
 }
 
@@ -104,30 +119,35 @@ void Level::setupLevel1() {
     player->setPos(100, 400);
     scene->addItem(player);
     player->setFocus();
-    
+
     // Create main floor platform (solid)
     Platform* floor = new Platform(0, 500, width, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(floor);
     platforms.append(floor);
-    
+
     // Add some floating platforms (passthrough)
     Platform* platform1 = new Platform(200, 400, 200, 20);
     Platform* platform2 = new Platform(500, 350, 200, 20);
     Platform* platform3 = new Platform(800, 300, 200, 20);
     Platform* platform4 = new Platform(1100, 250, 200, 20);
     Platform* platform5 = new Platform(1400, 300, 200, 20);
-    
+
     scene->addItem(platform1);
     scene->addItem(platform2);
     scene->addItem(platform3);
     scene->addItem(platform4);
     scene->addItem(platform5);
-    
+
     platforms.append(platform1);
     platforms.append(platform2);
     platforms.append(platform3);
     platforms.append(platform4);
     platforms.append(platform5);
+
+    Enemy* enemy = new Enemy();
+    enemy->setPos(850, 250);  // Position just above platform3 (800, 300)
+    scene->addItem(enemy);
+    enemies.append(enemy);
 }
 
 
@@ -139,26 +159,26 @@ void Level::setupLevel2() {
     scene->setSceneRect(0, 0, width, height);
 
     // Level 2 - harder layout with more obstacles
-    
+
     // Create player
     player = new Player();
     player->setPos(100, 400);
     scene->addItem(player);
     player->setFocus();
-    
+
     // Create main floor platform (solid) but with gaps
     Platform* floor1 = new Platform(0, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     Platform* floor2 = new Platform(750, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     Platform* floor3 = new Platform(1500, 500, 500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
-    
+
     scene->addItem(floor1);
     scene->addItem(floor2);
     scene->addItem(floor3);
-    
+
     platforms.append(floor1);
     platforms.append(floor2);
     platforms.append(floor3);
-    
+
     // Add some floating platforms (passthrough)
     Platform* platform1 = new Platform(200, 350, 150, 20);
     Platform* platform2 = new Platform(450, 300, 150, 20);
@@ -167,7 +187,7 @@ void Level::setupLevel2() {
     Platform* platform5 = new Platform(1200, 250, 150, 20);
     Platform* platform6 = new Platform(1450, 300, 150, 20);
     Platform* platform7 = new Platform(1700, 350, 150, 20);
-    
+
     scene->addItem(platform1);
     scene->addItem(platform2);
     scene->addItem(platform3);
@@ -175,7 +195,7 @@ void Level::setupLevel2() {
     scene->addItem(platform5);
     scene->addItem(platform6);
     scene->addItem(platform7);
-    
+
     platforms.append(platform1);
     platforms.append(platform2);
     platforms.append(platform3);
@@ -183,7 +203,7 @@ void Level::setupLevel2() {
     platforms.append(platform5);
     platforms.append(platform6);
     platforms.append(platform7);
-    
+
     // TODO: Create obstacles
 }
 
@@ -260,7 +280,7 @@ void Level::update_level() {
     set_frequencyM();
     set_velocityM();
     set_damageM();
-    
+
     // Switch to level 2 if we're on level 1
     if (level_type == LEVEL_1) {
         level_type = LEVEL_2;
@@ -316,3 +336,4 @@ void Level::followPlayer(QGraphicsView* view) {
 
     view->centerOn(centerX, centerY);
 }
+
