@@ -537,11 +537,11 @@ void Player::checkAttackCollision()
 void Player::updateAttackPosition()
 {
     if (!attackGraphic) return;
-    
+
     // Position the attack in front of the player based on the attack direction
     float offsetX = rect().width() / 2 + attackDirectionX * attackDistance;
     float offsetY = rect().height() / 2 + attackDirectionY * attackDistance;
-    
+
     attackGraphic->setPos(pos().x() + offsetX, pos().y() + offsetY);
 }
 
@@ -549,17 +549,17 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
 {
     // Create a crescent-shaped path
     QPainterPath path;
-    
+
     // The size of the crescent
     float radius = 30;
     float thickness = 10;
-    
+
     // Calculate angle of direction vector
     float angle = std::atan2(dirY, dirX) * 180 / M_PI;
-    
+
     // Adjust the angle offset to make the crescent points face the player in all directions
     float startAngle;
-    
+
     // For vertical directions (up/down), flip the crescent orientation
     if (std::abs(dirY) > std::abs(dirX)) {
         // Primarily vertical direction (up or down)
@@ -574,32 +574,32 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
         // Primarily horizontal or diagonal direction
         startAngle = angle - 45;
     }
-    
+
     // Create a crescent shape
     path.arcTo(-radius, -radius, radius * 2, radius * 2, startAngle, 90);
-    
+
     // Create an inner arc to make it hollow
     QPainterPath innerPath;
-    innerPath.arcTo(-(radius - thickness), -(radius - thickness), 
-                   (radius - thickness) * 2, (radius - thickness) * 2, 
+    innerPath.arcTo(-(radius - thickness), -(radius - thickness),
+                   (radius - thickness) * 2, (radius - thickness) * 2,
                    startAngle, 90);
-    
+
     // Subtract inner arc from outer arc to create crescent
     path = path.subtracted(innerPath);
-    
+
     // Create the graphic item
     QGraphicsPathItem* attackItem = new QGraphicsPathItem(path);
-    
+
     // Set position relative to player
     float offsetX = rect().width() / 2 + dirX * attackDistance;
     float offsetY = rect().height() / 2 + dirY * attackDistance;
-    
+
     attackItem->setPos(pos().x() + offsetX, pos().y() + offsetY);
-    
+
     // Make it a bright color to contrast with player
     attackItem->setBrush(QBrush(Qt::green));
     attackItem->setPen(QPen(Qt::darkGreen, 2));
-    
+
     return attackItem;
 }
 
