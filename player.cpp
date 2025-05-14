@@ -549,18 +549,18 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
 {
     // Create a crescent-shaped path
     QPainterPath path;
-
     // The size of the crescent
     float radius = 30;
     float thickness = 10;
-
     // Calculate angle of direction vector
     float angle = std::atan2(dirY, dirX) * 180 / M_PI;
 
     // Adjust the angle offset to make the crescent points face the player in all directions
     float startAngle;
 
-    // For vertical directions (up/down), flip the crescent orientation
+    // Determine if this is a diagonal direction
+    bool isDiagonal = (std::abs(dirX) > 0.1 && std::abs(dirY) > 0.1);
+
     if (std::abs(dirY) > std::abs(dirX)) {
         // Primarily vertical direction (up or down)
         if (dirY < 0) {
@@ -570,8 +570,23 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
             // Down direction - points should face up (towards player)
             startAngle = angle - 135;
         }
+    } else if (isDiagonal) {
+        // Handle diagonal directions
+        if (dirX > 0 && dirY < 0) {
+            // Up-right diagonal - FIXED: point to bottom-left
+            startAngle = angle + 45;
+        } else if (dirX < 0 && dirY < 0) {
+            // Up-left diagonal - already working
+            startAngle = angle + 225;
+        } else if (dirX > 0 && dirY > 0) {
+            // Down-right diagonal - FIXED: point to top-left
+            startAngle = angle + 225;
+        } else {
+            // Down-left diagonal - already working
+            startAngle = angle + 45;
+        }
     } else {
-        // Primarily horizontal or diagonal direction
+        // Primarily horizontal direction
         startAngle = angle - 45;
     }
 
@@ -581,8 +596,8 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
     // Create an inner arc to make it hollow
     QPainterPath innerPath;
     innerPath.arcTo(-(radius - thickness), -(radius - thickness),
-                   (radius - thickness) * 2, (radius - thickness) * 2,
-                   startAngle, 90);
+                    (radius - thickness) * 2, (radius - thickness) * 2,
+                    startAngle, 90);
 
     // Subtract inner arc from outer arc to create crescent
     path = path.subtracted(innerPath);
@@ -593,7 +608,6 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
     // Set position relative to player
     float offsetX = rect().width() / 2 + dirX * attackDistance;
     float offsetY = rect().height() / 2 + dirY * attackDistance;
-
     attackItem->setPos(pos().x() + offsetX, pos().y() + offsetY);
 
     // Make it a bright color to contrast with player
@@ -602,7 +616,6 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
 
     return attackItem;
 }
-
 void Player::reset()
 {
     // Reset player position

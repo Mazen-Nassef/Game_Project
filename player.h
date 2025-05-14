@@ -31,10 +31,10 @@ public:
     void takeDamage(int amount = 1);
     void reset();
     int getHealth() const { return health.get(); }
-    
+
     signals:
     void healthChanged(int newHealth);
-    
+
 
 private slots:
     void applyGravity();
@@ -50,7 +50,7 @@ private:
     QGraphicsPathItem* createAttackGraphic(float dirX, float dirY);
     // Update the position of the attack graphic to follow the player
     void updateAttackPosition();
-    
+
     Health health;
     float speed;
     float maxSpeed;
@@ -78,7 +78,7 @@ private:
     QTimer *dashTimer = nullptr;
     bool isDashing = false;
     float dashX = 0, dashY = 0;
-    
+
     // Attack related variables
     QTimer *attackTimer = nullptr;
     QTimer *attackCollisionTimer = nullptr;
