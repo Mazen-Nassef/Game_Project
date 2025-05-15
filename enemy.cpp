@@ -16,14 +16,7 @@ void Enemy::takeDamage(int amount)
 {
     health.takeDamage(amount);
     if (isDead()) {
-        // Remove the enemy from the level's enemies list before deletion
-        Level* level = dynamic_cast<Level*>(scene()); // Assuming you're using a Level class to manage the scene
-        if (level) {
-            level->removeEnemy(this); // Implement a method to remove enemies from the level's list
-        }
-
-        scene()->removeItem(this);
-        this->deleteLater(); // Safely delete after the removal
+        setPos(0,0);
     }
 }
 

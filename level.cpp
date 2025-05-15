@@ -110,69 +110,82 @@ void Level::createLevel() {
 }
 
 void Level::setupLevel1() {
-    width = 5000;
-    height = 600;
+    width = 6000;  // Reduced level width to match smaller gap
+    height = 800;  // Increased height for plateau
 
-    scene->setSceneRect(0 , 0 , width , height);
+    scene->setSceneRect(0, 0, width, height);
 
     // Create player
     player = new Player();
-    player->setPos(100, 400);
+    player->setPos(100, 600);  // Flat starting area
     scene->addItem(player);
     player->setFocus();
 
-    // Create main floor platform (solid)
-    Platform* floor = new Platform(0, 500, width, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    // Create main flat ground platform (solid)
+    Platform* floor = new Platform(0, 700, 2000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(floor);
     platforms.append(floor);
 
-    // Add some floating platforms (passthrough)
-    Platform* platform1 = new Platform(200, 400, 200, 20);
-    Platform* platform2 = new Platform(500, 350, 200, 20);
-    Platform* platform3 = new Platform(800, 300, 200, 20);
-    Platform* platform4 = new Platform(1100, 250, 200, 20);
-    Platform* platform5 = new Platform(1400, 300, 200, 20);
+    // Raised ledge (connected to flat ground)
+    Platform* raisedLedge = new Platform(1500, 600, 500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(raisedLedge);
+    platforms.append(raisedLedge);
 
-    scene->addItem(platform1);
-    scene->addItem(platform2);
-    scene->addItem(platform3);
-    scene->addItem(platform4);
-    scene->addItem(platform5);
+    // Reduced gap that requires jump and dash
+    Platform* landingPlatform = new Platform(2400, 700, 1100, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(landingPlatform);
+    platforms.append(landingPlatform);
 
-    platforms.append(platform1);
-    platforms.append(platform2);
-    platforms.append(platform3);
-    platforms.append(platform4);
-    platforms.append(platform5);
+    // Plateau with climbable pass-through platforms
+    Platform* plateauBase = new Platform(3500, 300, 1500, 500, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(plateauBase);
+    platforms.append(plateauBase);
 
+    Platform* plateauEnd = new Platform(5000, 700, 1500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(plateauEnd);
+    platforms.append(plateauEnd);
+
+    // Pass-through platforms to climb the plateau
+    Platform* climb1 = new Platform(2900, 550, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb2 = new Platform(3050, 500, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb3 = new Platform(3200, 450, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb4 = new Platform(3350, 400, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+
+    scene->addItem(climb1);
+    scene->addItem(climb2);
+    scene->addItem(climb3);
+    scene->addItem(climb4);
+    platforms.append(climb1);
+    platforms.append(climb2);
+    platforms.append(climb3);
+    platforms.append(climb4);
+
+    // Enemy guarding the goal
     Enemy* enemy = new Enemy();
-    enemy->setPos(850, 250);  // Position just above platform3 (800, 300)
+    enemy->setPos(5500, 550);  // Positioned in front of the goal
     scene->addItem(enemy);
     enemies.append(enemy);
+
+    // Clear previous goal if exists
     if (goal) {
         scene->removeItem(goal);
         delete goal;
         goal = nullptr;
     }
 
-    // — Create a new flag
-    int flagWidth  = 10;
+    // Create the goal flag
+    int flagWidth = 10;
     int flagHeight = 200;
     goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
     goal->setBrush(Qt::blue);
     goal->setPen(Qt::NoPen);
 
-    // — Position it at the far right, just above the floor (y = 500)
-    int offsetFromRight= 3000;
-    int x = width - flagWidth - offsetFromRight;
-    int y = 500 - flagHeight;   // use your floor’s Y
+    // Position the goal at the end of the level, after the enemy
+    int x = 5800;
+    int y = 700 - flagHeight;
     goal->setPos(x, y);
-
-    // — Add to scene
     scene->addItem(goal);
 }
-
-
 void Level::setupLevel2() {
 
     width = 2500;

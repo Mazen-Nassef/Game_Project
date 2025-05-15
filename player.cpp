@@ -10,7 +10,7 @@
 Player::Player()
     : health(3), speed(1), maxSpeed(5), friction(0.5), gravity(1), dashSpeed(10), dashDuration(150), length(50), width(30), jumpHeight(15),
     yVelocity(0), xVelocity(0), canDash(true), isOnGround(false), isOnPlatform(false), currentPlatform(nullptr), gravityTimer(new QTimer(this)),
-    attackTimer(nullptr), attackCollisionTimer(nullptr), isAttacking(false), attackDuration(500), attackLaunchMagnitude(7), attackGraphic(nullptr), attackDistance(30),
+    attackTimer(nullptr), attackCollisionTimer(nullptr), isAttacking(false), attackDuration(500), attackLaunchMagnitude(15), attackGraphic(nullptr), attackDistance(30),
     attackDirectionX(0), attackDirectionY(0)
     // player stats, we can tweek until it feels right
 {
