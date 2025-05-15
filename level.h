@@ -39,7 +39,7 @@ private:
     QList<Platform*> platforms;
     QList<Obstacle*> obstacles;
      QList<Enemy*> enemies;
-    QGraphicsPixmapItem* goal;
+    QGraphicsRectItem* goal;
     Player* player;
     
     // Clear level elements
@@ -78,7 +78,7 @@ public:
 
     // Camera control
     void followPlayer(QGraphicsView* view);
-    
+     void checkFlagCollision();
     // Get the player pointer
     Player* getPlayer() const { return player; }
 };

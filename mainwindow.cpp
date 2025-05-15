@@ -3,7 +3,7 @@
 #include "player.h"
 #include "uimanager.h"
 #include "level.h"
-
+#include <QTimer>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -66,6 +66,24 @@ void MainWindow::setupGame()
 
     // Start game timer in UI manager
     uiManager->startGameTimer();
+
+    // ——— Frame timer for physics, collision & camera ———
+    frameTimer = new QTimer(this);
+
+    // 1) Advance the scene: runs all QGraphicsItem::advance()
+    connect(frameTimer, &QTimer::timeout, scene, &QGraphicsScene::advance);
+
+    // 2) Check the flag‑collision each frame
+    connect(frameTimer, &QTimer::timeout, this, [this]() {
+        if (currentLevel && player) {
+            currentLevel->checkFlagCollision();
+        }
+    });
+
+    connect(frameTimer, &QTimer::timeout, this, &MainWindow::updateCamera);
+
+    // Start the loop at roughly 60 FPS
+    frameTimer->start(16);
 }
 
 

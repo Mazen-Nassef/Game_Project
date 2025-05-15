@@ -2,6 +2,7 @@
 #include "enemy.h"
 #include <QGraphicsView>
 #include <QBrush>
+#include <QPen>
 
 Level::Level(QGraphicsScene* scene) {
     this->scene = scene;
@@ -148,6 +149,27 @@ void Level::setupLevel1() {
     enemy->setPos(850, 250);  // Position just above platform3 (800, 300)
     scene->addItem(enemy);
     enemies.append(enemy);
+    if (goal) {
+        scene->removeItem(goal);
+        delete goal;
+        goal = nullptr;
+    }
+
+    // — Create a new flag
+    int flagWidth  = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+    // — Position it at the far right, just above the floor (y = 500)
+    int offsetFromRight= 3000;
+    int x = width - flagWidth - offsetFromRight;
+    int y = 500 - flagHeight;   // use your floor’s Y
+    goal->setPos(x, y);
+
+    // — Add to scene
+    scene->addItem(goal);
 }
 
 
@@ -205,7 +227,29 @@ void Level::setupLevel2() {
     platforms.append(platform7);
 
     // TODO: Create obstacles
+    if (goal) {
+        scene->removeItem(goal);
+        delete goal;
+        goal = nullptr;
+    }
+
+    // — Create a new flag
+    int flagWidth  = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+    // — Position it at the far right, just above the floor (y = 500)
+    int offsetFromRight= 600;
+    int x = width - flagWidth - offsetFromRight;
+    int y = 500 - flagHeight;   // use your floor’s Y
+    goal->setPos(x, y);
+
+    // — Add to scene
+    scene->addItem(goal);
 }
+
 
 void Level::setupLevel3() {
     width = 800;
@@ -223,7 +267,31 @@ void Level::setupLevel3() {
     platforms.append(floor);
 
     // TODO: Add platforms, obstacles, etc.
+
+
+    if (goal) {
+        scene->removeItem(goal);
+        delete goal;
+        goal = nullptr;
+    }
+
+    // — Create a new flag
+    int flagWidth  = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+    // — Position it at the far right, just above the floor (y = 500)
+    int offsetFromRight= 3000;
+    int x = width - flagWidth - offsetFromRight;
+    int y = 500 - flagHeight;   // use your floor’s Y
+    goal->setPos(x, y);
+
+    // — Add to scene
+    scene->addItem(goal);
 }
+
 
 void Level::setupLevel4() {
     width = 1000;
@@ -236,7 +304,31 @@ void Level::setupLevel4() {
     player->setFocus();
 
     // TODO: Add platforms, obstacles, etc.
+
+
+    if (goal) {
+        scene->removeItem(goal);
+        delete goal;
+        goal = nullptr;
+    }
+
+    // — Create a new flag
+    int flagWidth  = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+    // — Position it at the far right, just above the floor (y = 500)
+    int offsetFromRight= 3000;
+    int x = width - flagWidth - offsetFromRight;
+    int y = 500 - flagHeight;   // use your floor’s Y
+    goal->setPos(x, y);
+
+    // — Add to scene
+    scene->addItem(goal);
 }
+
 
 void Level::setupLevel5() {
     width = 1000;
@@ -249,7 +341,30 @@ void Level::setupLevel5() {
     player->setFocus();
 
     // TODO: Add platforms, obstacles, etc.
+
+    if (goal) {
+        scene->removeItem(goal);
+        delete goal;
+        goal = nullptr;
+    }
+
+    // — Create a new flag
+    int flagWidth  = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+    // — Position it at the far right, just above the floor (y = 500)
+    int offsetFromRight= 3000;
+    int x = width - flagWidth - offsetFromRight;
+    int y = 500 - flagHeight;   // use your floor’s Y
+    goal->setPos(x, y);
+
+    // — Add to scene
+    scene->addItem(goal);
 }
+
 
 int Level::getLevelNumber() const {
     return level_number;
@@ -281,23 +396,25 @@ void Level::update_level() {
     set_velocityM();
     set_damageM();
 
-    // Switch to level 2 if we're on level 1
-    if (level_type == LEVEL_1) {
+    switch (level_type) {
+    case LEVEL_1:
         level_type = LEVEL_2;
-        createLevel();
-    }
-    if (level_type == LEVEL_2) {
+        break;
+    case LEVEL_2:
         level_type = LEVEL_3;
-        createLevel();
-    }
-    if (level_type == LEVEL_3) {
+        break;
+    case LEVEL_3:
         level_type = LEVEL_4;
-        createLevel();
-    }
-    if (level_type == LEVEL_4) {
+        break;
+    case LEVEL_4:
         level_type = LEVEL_5;
-        createLevel();
+        break;
+    case LEVEL_5:
+        return;
     }
+
+    // 3) Rebuild the new level
+    createLevel();
 }
 
 void Level::set_frequencyM() {
@@ -336,4 +453,12 @@ void Level::followPlayer(QGraphicsView* view) {
 
     view->centerOn(centerX, centerY);
 }
+void Level::checkFlagCollision() {
+    if (!goal || !player) return;
 
+    // If the player's bounding box overlaps the flag...
+    if (player->collidesWithItem(goal)) {
+        // Advance to the next level
+        update_level();
+    }
+}

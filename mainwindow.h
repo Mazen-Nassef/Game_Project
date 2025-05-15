@@ -1,6 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
+#include <QTimer>
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -35,7 +35,7 @@ private:
     
     Ui::MainWindow *ui;
     UIManager* uiManager;
-    
+    QTimer*           frameTimer; // to handle collision with flag
     // Game elements
     QGraphicsScene* scene;
     Level* currentLevel;
