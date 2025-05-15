@@ -390,7 +390,7 @@ void Player::applyGravity()
 
     // Set clamped position
     setPos(pos);
-
+    checkEnemyCollisions();
 }
     
 void Player::takeDamage(int amount)
@@ -539,6 +539,39 @@ void Player::checkAttackCollision()
     // Update the attack graphic position to follow the player
     if (attackGraphic) {
         updateAttackPosition();
+    }
+}
+void Player::checkEnemyCollisions()
+{
+    if (!scene())
+        return;
+
+    for (QGraphicsItem* item : scene()->collidingItems(this)) {
+        if (Enemy* enemy = dynamic_cast<Enemy*>(item)) {
+            handleEnemyCollision(enemy);
+            break;  // only handle one per frame
+        }
+    }
+}
+void Player::handleEnemyCollision(Enemy* enemy)
+{
+    takeDamage(enemy->getDamageOnCollision());  // you’ll need to add getDamageOnCollision() to Enemy
+       QPointF diff = pos() - enemy->pos();
+    qreal len = std::hypot(diff.x(), diff.y());
+    if (len > 0) {
+        constexpr float KNOCKBACK_SPEED = 10.0f;
+        xVelocity = (diff.x()/len) * KNOCKBACK_SPEED;
+        yVelocity = (diff.y()/len) * KNOCKBACK_SPEED;
+    }
+
+    enemy->takeDamage(1);
+    if (enemy->isDead()) {
+        scene()->removeItem(enemy);
+        delete enemy;
+    }
+
+    if (health.get() <= 0) {
+        emit gameOver();
     }
 }
 

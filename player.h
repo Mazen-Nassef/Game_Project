@@ -9,6 +9,7 @@
 #include <QDebug>
 #include "health.h"
 #include "platform.h"
+#include "enemy.h"
 
 // Forward declaration
 class QGraphicsPathItem;
@@ -30,16 +31,21 @@ public:
 
     void takeDamage(int amount = 1);
     void reset();
-    int getHealth() const { return health.get(); }
+    int getHealth() const { return health.get();}
+    void checkEnemyCollisions();
+
+
 
     signals:
     void healthChanged(int newHealth);
+    void gameOver();
 
 
 private slots:
     void applyGravity();
     void removeAttack();
     void checkAttackCollision();
+
 
 private:
     // Check for platform collisions and handle them
@@ -89,6 +95,7 @@ private:
     float attackDistance = 30; // How far the attack appears from the player
     float attackDirectionX = 0;
     float attackDirectionY = 0;
+    void handleEnemyCollision(Enemy* enemy);
 };
 
 #endif // PLAYER_H

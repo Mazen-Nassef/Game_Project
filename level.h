@@ -38,15 +38,19 @@ private:
     QGraphicsScene* scene;
     QList<Platform*> platforms;
     QList<Obstacle*> obstacles;
-     QList<Enemy*> enemies;
+    QList<Enemy*> enemies;
     QGraphicsRectItem* goal;
     Player* player;
+<<<<<<< HEAD
     QList<QGraphicsTextItem*> texts;
 
     
+=======
+
+>>>>>>> 66dfcd105570027f7071e76c1f1f2064187706fc
     // Clear level elements
     void clearLevel();
-    
+
     // Level setup methods
     void setupLevel1();
     void setupLevel2();
@@ -57,16 +61,16 @@ private:
 public:
     Level(QGraphicsScene* scene = nullptr);
     ~Level();
-    
+
     // Configure the level
     void setLevelType(LevelType type);
     void setScene(QGraphicsScene* scene);
 
     void removeEnemy(Enemy* enemy);
-    
+
     // Create the level with the current configuration
     void createLevel();
-    
+
     // Level properties getters
     int getLevelNumber() const;
     double getFrequencyM() const;
@@ -74,13 +78,13 @@ public:
     double getDamageM() const;
     int getWidth() const;
     int getHeight() const;
-    
+
     // Update to next level
     void update_level();
 
     // Camera control
     void followPlayer(QGraphicsView* view);
-     void checkFlagCollision();
+    void checkFlagCollision();
     // Get the player pointer
     Player* getPlayer() const { return player; }
 };

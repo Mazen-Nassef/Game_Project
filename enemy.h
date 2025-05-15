@@ -11,7 +11,7 @@ public:
     explicit Enemy(QGraphicsItem *parent = nullptr);
     void takeDamage(int amount); // Override to apply damage to health
     bool isDead() const;         // To check if health has reached 0
-
+    int getDamageOnCollision() const { return 1; }
 private:
     Health health;
     bool isInvulnerable;

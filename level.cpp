@@ -16,6 +16,7 @@ Level::Level(QGraphicsScene* scene) {
     set_damageM();
 }
 
+
 Level::~Level() {
     clearLevel();
 }
