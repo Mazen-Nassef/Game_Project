@@ -270,7 +270,34 @@ void Player::performDash()
     setBrush(QBrush(Qt::blue));
     // makes the player blue, basic visual indicator for when the player can't dash
 
-    // yVelocity = 0;
+    // Horizontal dash clipping prevention
+    if (dirY == 0) {
+        qreal playerSideYStart = y() + 1;
+        qreal playerSideYEnd = y() + rect().height() - 1;
+        qreal playerCenterX = x() + rect().width() / 2;
+        qreal smallGap = std::abs(xVelocity) + rect().width() / 2 + 1.0;
+        QList<QGraphicsItem*> collidingItems = scene()->collidingItems(this);
+
+        for (QGraphicsItem* item : collidingItems) {
+            Platform* platform = dynamic_cast<Platform*>(item);
+            if (platform && platform->isSolid() && platform != currentPlatform) {
+                QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
+
+                // Check the vertical line along the side of the player
+                if (xVelocity > 0 && playerCenterX + smallGap > platformRect.left() && playerCenterX < platformRect.right()) {
+                    if (playerSideYStart < platformRect.bottom() && playerSideYEnd > platformRect.top()) {
+                        setX(platformRect.left() - rect().width());
+                        xVelocity = 0;
+                    }
+                } else if (xVelocity < 0 && playerCenterX - smallGap < platformRect.right() && playerCenterX > platformRect.left()) {
+                    if (playerSideYStart < platformRect.bottom() && playerSideYEnd > platformRect.top()) {
+                        setX(platformRect.right());
+                        xVelocity = 0;
+                    }
+                }
+            }
+        }
+    }
 
     if (!dashTimer) dashTimer = new QTimer(this);
     dashTimer->setSingleShot(true);
@@ -310,6 +337,33 @@ void Player::applyGravity()
         moveForward();
     }
     // handles left/right movement
+
+    //horizontal clipping
+    qreal playerSideYStart = y() + 1;
+    qreal playerSideYEnd = y() + rect().height() - 1;
+    qreal playerCenterX = x() + rect().width() / 2;
+    qreal smallGap = std::abs(xVelocity) + rect().width() / 2 + 1.0;
+    QList<QGraphicsItem*> collidingItems = scene()->collidingItems(this);
+
+    for (QGraphicsItem* item : collidingItems) {
+        Platform* platform = dynamic_cast<Platform*>(item);
+        if (platform && platform->isSolid() && platform != currentPlatform) {
+            QRectF platformRect = platform->mapToScene(platform->rect()).boundingRect();
+
+            // Check the vertical line along the side of the player
+            if (xVelocity > 0 && playerCenterX + smallGap > platformRect.left() && playerCenterX < platformRect.right()) {
+                if (playerSideYStart < platformRect.bottom() && playerSideYEnd > platformRect.top()) {
+                    setX(platformRect.left() - rect().width());
+                    xVelocity = 0;
+                }
+            } else if (xVelocity < 0 && playerCenterX - smallGap < platformRect.right() && playerCenterX > platformRect.left()) {
+                if (playerSideYStart < platformRect.bottom() && playerSideYEnd > platformRect.top()) {
+                    setX(platformRect.right());
+                    xVelocity = 0;
+                }
+            }
+        }
+    }
 
     setX(x() + xVelocity);
     setY(y() + yVelocity);
@@ -385,7 +439,8 @@ void Player::applyGravity()
     else if (pos.y() + boundingRect().height() > bounds.bottom()) {
         pos.setY(bounds.bottom() - boundingRect().height());
         // If the player falls below the bottom boundary, call reset
-        reset();
+        emit gameOver();
+        return;
     }
 
     // Set clamped position
@@ -416,7 +471,8 @@ void Player::takeDamage(int amount)
     // Check if player is still alive
     if (health.get() <= 0) {
         // Player has died
-        reset();
+        emit gameOver();
+        return;
     }
 }
     

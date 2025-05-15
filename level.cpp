@@ -1,8 +1,11 @@
 #include "level.h"
 #include "enemy.h"
+#include "mainwindow.h"
 #include <QGraphicsView>
 #include <QBrush>
 #include <QPen>
+#include <QObject>
+#include <QMessageBox>
 
 Level::Level(QGraphicsScene* scene) {
     this->scene = scene;
@@ -43,7 +46,7 @@ void Level::clearLevel() {
         delete obstacle;
     }
     obstacles.clear();
-
+    /*
     // Clear enemies and remove them from the scene
     for (auto enemy : enemies) {
         if (scene->items().contains(enemy)) {
@@ -53,6 +56,8 @@ void Level::clearLevel() {
         enemy->deleteLater();
     }
     enemies.clear();
+    */
+
 
     // Clear goal
     if (goal) {
@@ -67,11 +72,6 @@ void Level::clearLevel() {
         delete player;
         player = nullptr;
     }
-}
-
-void Level::removeEnemy(Enemy* enemy) {
-    // Remove the enemy from the enemies list
-    enemies.removeOne(enemy);
 }
 
 void Level::setScene(QGraphicsScene* scene) {
@@ -125,6 +125,7 @@ void Level::setupLevel1() {
     player = new Player();
     player->setPos(100, 600);
     scene->addItem(player);
+    connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
     Platform* floor = new Platform(0, 700, 2000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
@@ -223,6 +224,7 @@ void Level::setupLevel2() {
     player = new Player();
     player->setPos(450, 7800);  // Bottom of the tower
     scene->addItem(player);
+    connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
     QGraphicsTextItem* text5 = new QGraphicsTextItem("Now for the harder stuff");
@@ -414,6 +416,7 @@ void Level::setupLevel3() {
     player = new Player();
     player->setPos(100, 800);  // Flat starting area
     scene->addItem(player);
+    connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
     // Starting flat ground platform (solid)
@@ -507,41 +510,92 @@ void Level::setupLevel3() {
 }
 
 void Level::setupLevel4() {
-    width = 1000;
+    width = 9000;
     height = 1000;
+
     scene->setSceneRect(0, 0, width, height);
 
     player = new Player();
-    player->setPos(100, 400);
+    player->setPos(100, 800);  // Starting position
     scene->addItem(player);
+    connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
-    // TODO: Add platforms, obstacles, etc.
+    // Flat ground at the start
+    Platform* startGround = new Platform(0, 900, 1500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(startGround);
+    platforms.append(startGround);
 
+    QGraphicsTextItem* text1 = new QGraphicsTextItem("Prepare for jumping challenges ahead!");
+    text1->setPos(100, 700);
+    text1->setDefaultTextColor(Qt::black);
+    text1->setFont(QFont("Arial", 16));
+    scene->addItem(text1);
+    texts.append(text1);
 
-    if (goal) {
-        scene->removeItem(goal);
-        delete goal;
-        goal = nullptr;
+    // Series of raised platforms with enemies
+    int yPosition = 700;
+    for (int i = 0; i < 5; i++) {
+        Platform* platform = new Platform(1800 + i * 600, yPosition, 300, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+        scene->addItem(platform);
+        platforms.append(platform);
+        yPosition -= 50;
+
+        Enemy* patrolEnemy = new Enemy();
+        patrolEnemy->setPos(1950 + i * 600, yPosition - 30);
+        scene->addItem(patrolEnemy);
+        enemies.append(patrolEnemy);
     }
 
-    // — Create a new flag
-    int flagWidth  = 10;
-    int flagHeight = 200;
-    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    // Narrow passage with multiple enemies
+    Platform* passage = new Platform(4500, 900, 800, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(passage);
+    platforms.append(passage);
+
+    for (int i = 0; i < 4; i++) {
+        Enemy* ambushEnemy = new Enemy();
+        ambushEnemy->setPos(4600 + i * 150, 850);
+        scene->addItem(ambushEnemy);
+        enemies.append(ambushEnemy);
+    }
+
+    QGraphicsTextItem* text2 = new QGraphicsTextItem("Be careful! Enemies ahead!");
+    text2->setPos(4600, 700);
+    text2->setDefaultTextColor(Qt::red);
+    text2->setFont(QFont("Arial", 16));
+    scene->addItem(text2);
+    texts.append(text2);
+
+    for (int i = 0; i < 4; i++) {
+        Enemy* jumpenemy = new Enemy();
+        jumpenemy->setPos(5500 + i * 110, 800 - i * 50);
+        scene->addItem(jumpenemy);
+        enemies.append(jumpenemy);
+    }
+
+
+    // Final climb to the goal
+    Platform* finalClimb1 = new Platform(6000, 800, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* finalClimb2 = new Platform(6300, 700, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* finalClimb3 = new Platform(6600, 600, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    scene->addItem(finalClimb1);
+    scene->addItem(finalClimb2);
+    scene->addItem(finalClimb3);
+    platforms.append(finalClimb1);
+    platforms.append(finalClimb2);
+    platforms.append(finalClimb3);
+
+    Platform* finalFloor = new Platform(7000, 600, 2000, 800, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(finalFloor);
+    platforms.append(finalFloor);
+
+    // Goal flag at the end
+    goal = new QGraphicsRectItem(0, 0, 10, 200);
     goal->setBrush(Qt::blue);
     goal->setPen(Qt::NoPen);
-
-    // — Position it at the far right, just above the floor (y = 500)
-    int offsetFromRight= 3000;
-    int x = width - flagWidth - offsetFromRight;
-    int y = 500 - flagHeight;   // use your floor’s Y
-    goal->setPos(x, y);
-
-    // — Add to scene
+    goal->setPos(8800, 400);
     scene->addItem(goal);
 }
-
 
 void Level::setupLevel5() {
     width = 1000;
@@ -551,6 +605,7 @@ void Level::setupLevel5() {
     player = new Player();
     player->setPos(100, 400);
     scene->addItem(player);
+    connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
     // TODO: Add platforms, obstacles, etc.
@@ -666,6 +721,7 @@ void Level::followPlayer(QGraphicsView* view) {
 
     view->centerOn(centerX, centerY);
 }
+
 void Level::checkFlagCollision() {
     if (!goal || !player) return;
 
@@ -674,4 +730,14 @@ void Level::checkFlagCollision() {
         // Advance to the next level
         update_level();
     }
+}
+
+
+void Level::onPlayerGameOver() {
+    if (gameOverHandled) return; // Already handled once
+    gameOverHandled = true;
+
+    QMessageBox::information(nullptr, "Game Over", "You Lose!");
+    if (mainWindow)
+        mainWindow->close();
 }

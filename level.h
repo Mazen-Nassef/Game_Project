@@ -9,8 +9,11 @@
 #include "obstacle.h"
 #include "platform.h"
 #include "player.h"
+#include <QMainWindow>
 
-class Level {
+class MainWindow;
+class Level : public QObject {
+    Q_OBJECT
 public:
     enum LevelType {
         LEVEL_1,
@@ -22,6 +25,7 @@ public:
 
 
 private:
+    MainWindow* mainWindow;
     int level_number;
     double frequency_multiplier;
     double velocity_multiplier;
@@ -82,6 +86,9 @@ public:
     void checkFlagCollision();
     // Get the player pointer
     Player* getPlayer() const { return player; }
+    bool gameOverHandled = false;
+public slots:
+    void onPlayerGameOver();
 };
 
 #endif // LEVEL_H
