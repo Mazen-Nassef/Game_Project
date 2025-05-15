@@ -572,7 +572,7 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
             startAngle = angle + 135;
         } else {
             // Down direction - points should face up (towards player)
-            startAngle = angle - 135;
+            startAngle = angle - 225;
         }
     } else if (isDiagonal) {
         // Handle diagonal directions
