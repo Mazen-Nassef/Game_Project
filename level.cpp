@@ -248,9 +248,9 @@ void Level::setupLevel2() {
     scene->addItem(recoilStart);
     platforms.append(recoilStart);
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         Enemy* recoilEnemy = new Enemy();
-        recoilEnemy->setPos(5100 + i * 200, 900);  // Evenly spaced stationary enemies
+        recoilEnemy->setPos(5100 + i * 150, 900);  // Evenly spaced stationary enemies
         scene->addItem(recoilEnemy);
         enemies.append(recoilEnemy);
     }

@@ -439,6 +439,10 @@ void Player::performAttack()
         else if (xVelocity < 0) dirX = -1;  // Facing left
         else dirX = 1;  // Default to right if no horizontal velocity
     }
+
+    if(dirY == 1){
+        dirX = 0;
+    }
     
     // Normalize the direction vector
     float length = std::sqrt(dirX * dirX + dirY * dirY);
@@ -584,6 +588,10 @@ void Player::updateAttackPosition()
 
 QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
 {
+    if(dirY == 1){
+        dirX = 0;
+    }
+
     // Create a crescent-shaped path
     QPainterPath path;
     // The size of the crescent
@@ -617,10 +625,10 @@ QGraphicsPathItem* Player::createAttackGraphic(float dirX, float dirY)
             startAngle = angle + 225;
         } else if (dirX > 0 && dirY > 0) {
             // Down-right diagonal - FIXED: point to top-left
-            startAngle = angle + 225;
+            startAngle = angle - 225;
         } else {
             // Down-left diagonal - already working
-            startAngle = angle + 45;
+            startAngle = angle - 225;
         }
     } else {
         // Primarily horizontal direction
