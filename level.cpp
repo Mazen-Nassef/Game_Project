@@ -598,38 +598,64 @@ void Level::setupLevel4() {
 }
 
 void Level::setupLevel5() {
-    width = 1000;
-    height = 1000;
+
+    width  = 6000;
+    height = 800;
     scene->setSceneRect(0, 0, width, height);
 
+
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
     player = new Player();
-    player->setPos(100, 400);
+    player->setPos(100, 600);
     scene->addItem(player);
     connect(player, SIGNAL(gameOver()), this, SLOT(onPlayerGameOver()));
     player->setFocus();
 
-    // TODO: Add platforms, obstacles, etc.
+
+    Platform* floor = new Platform(0, 700, width, 100,
+                                   Platform::PlatformType::Solid,
+                                   Qt::darkGreen);
+    scene->addItem(floor);
+    platforms.append(floor);
+
+
+    std::vector<QPointF> platPos = {
+        {1000, 550},
+        {2500, 450},
+        {4000, 600}
+    };
+    for (auto& p : platPos) {
+        Platform* plat = new Platform(p.x(), p.y(), 300, 20,
+                                      Platform::PlatformType::Passthrough,
+                                      Qt::yellow);
+        scene->addItem(plat);
+        platforms.append(plat);
+    }
+
+    const int numEnemies = 8;
+    const int minX = 600;
+    const int maxX = width - 400;
+    const int baseY = 650;  // sit on floor
+
+    for (int i = 0; i < numEnemies; ++i) {
+        int x = std::rand() % (maxX - minX + 1) + minX;
+        Enemy* e = new Enemy();
+        e->setPos(x, baseY);
+        scene->addItem(e);
+        enemies.append(e);
+    }
 
     if (goal) {
         scene->removeItem(goal);
         delete goal;
         goal = nullptr;
     }
-
-    // — Create a new flag
-    int flagWidth  = 10;
-    int flagHeight = 200;
-    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    const int flagW = 10, flagH = 200;
+    goal = new QGraphicsRectItem(0, 0, flagW, flagH);
     goal->setBrush(Qt::blue);
     goal->setPen(Qt::NoPen);
-
-    // — Position it at the far right, just above the floor (y = 500)
-    int offsetFromRight= 3000;
-    int x = width - flagWidth - offsetFromRight;
-    int y = 500 - flagHeight;   // use your floor’s Y
-    goal->setPos(x, y);
-
-    // — Add to scene
+    goal->setPos(width - 200, 700 - flagH);
     scene->addItem(goal);
 }
 
@@ -724,15 +750,15 @@ void Level::followPlayer(QGraphicsView* view) {
 
 void Level::checkFlagCollision() {
     if (!goal || !player) return;
-
-    // If the player's bounding box overlaps the flag...
     if (player->collidesWithItem(goal)) {
-        // Advance to the next level
-        update_level();
+        if (level_number == 5) {
+            QMessageBox::information(nullptr, "Game Complete", "Congratulations! You have completed all levels!");
+        } else {
+            QMessageBox::information(nullptr, "Congratulations!", "You reached the flag!");
+            update_level();
+        }
     }
 }
-
-
 void Level::onPlayerGameOver() {
     if (gameOverHandled) return; // Already handled once
     gameOverHandled = true;
@@ -741,3 +767,5 @@ void Level::onPlayerGameOver() {
     if (mainWindow)
         mainWindow->close();
 }
+
+
