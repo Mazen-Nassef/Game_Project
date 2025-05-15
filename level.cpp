@@ -278,47 +278,127 @@ void Level::setupLevel2() {
     goal->setPos(7800, 700);  // Positioned at the end of the final platform
     scene->addItem(goal);
 }
+
 void Level::setupLevel3() {
-    width = 800;
-    height = 5000;
+    width = 1000;  // Narrow vertical shaft
+    height = 8000; // High vertical climb
+
     scene->setSceneRect(0, 0, width, height);
 
+    // Create player at the starting position
     player = new Player();
-    player->setPos(100, 400);
+    player->setPos(450, 7800);  // Bottom of the tower
     scene->addItem(player);
     player->setFocus();
 
-    Platform* floor = new Platform(0, 550, width, 200, Platform::PlatformType::Solid, Qt::darkGreen);
+    // Left and right solid walls to form a vertical shaft
+    Platform* leftWall = new Platform(0, 0, 50, height, Platform::PlatformType::Solid, Qt::darkGreen);
+    Platform* rightWall = new Platform(950, 0, 50, height, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(leftWall);
+    scene->addItem(rightWall);
+    platforms.append(leftWall);
+    platforms.append(rightWall);
 
-    scene->addItem(floor);
-    platforms.append(floor);
+    // Starting area: flat ground with one platform to jump on
+    Platform* groundFloor = new Platform(50, 7900, 900, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(groundFloor);
+    platforms.append(groundFloor);
 
-    // TODO: Add platforms, obstacles, etc.
+    Platform* startJump = new Platform(400, 7700, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    scene->addItem(startJump);
+    platforms.append(startJump);
 
+    // First checkpoint area with gap
+    Platform* checkpoint1 = new Platform(50, 7500, 350, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    Platform* gap1 = new Platform(400, 7500, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* checkpoint1Right = new Platform(650, 7500, 300, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(checkpoint1);
+    scene->addItem(gap1);
+    scene->addItem(checkpoint1Right);
+    platforms.append(checkpoint1);
+    platforms.append(gap1);
+    platforms.append(checkpoint1Right);
 
-    if (goal) {
-        scene->removeItem(goal);
-        delete goal;
-        goal = nullptr;
+    // First climbing area: alternating platforms (already correct)
+    int yPosition = 7300;
+    for (int i = 0; i < 10; i++) {
+        Platform::PlatformType type = (i % 2 == 0) ? Platform::PlatformType::Solid : Platform::PlatformType::Passthrough;
+        Platform* climbPlatform = new Platform(400, yPosition, 200, 20, type, Qt::yellow);
+        scene->addItem(climbPlatform);
+        platforms.append(climbPlatform);
+
+        if (i % 3 == 0) {
+            Enemy* climbEnemy = new Enemy();
+            climbEnemy->setPos(450, yPosition - 30);  // Positioned slightly above the platform
+            scene->addItem(climbEnemy);
+            enemies.append(climbEnemy);
+        }
+        yPosition -= 300;
     }
 
-    // — Create a new flag
-    int flagWidth  = 10;
+    // Second checkpoint area with gap
+    Platform* checkpoint2 = new Platform(50, 4200, 350, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    Platform* gap2 = new Platform(400, 4200, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* checkpoint2Right = new Platform(650, 4200, 300, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(checkpoint2);
+    scene->addItem(gap2);
+    scene->addItem(checkpoint2Right);
+    platforms.append(checkpoint2);
+    platforms.append(gap2);
+    platforms.append(checkpoint2Right);
+
+    // Improved second climbing area: alternating left and right with closer spacing
+    yPosition = 4000;
+    int xLeft = 300;
+    int xRight = 500;
+    for (int i = 0; i < 8; i++) {
+        Platform* solidPlatform = new Platform((i % 2 == 0) ? xLeft : xRight, yPosition, 100, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+        Platform* passPlatform = new Platform((i % 2 == 0) ? xRight : xLeft, yPosition, 100, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+        scene->addItem(solidPlatform);
+        scene->addItem(passPlatform);
+        platforms.append(solidPlatform);
+        platforms.append(passPlatform);
+
+        if (i % 2 == 0) {
+            Enemy* climbEnemy = new Enemy();
+            climbEnemy->setPos((i % 2 == 0) ? xRight + 20 : xLeft + 20, yPosition - 30);
+            scene->addItem(climbEnemy);
+            enemies.append(climbEnemy);
+        }
+        yPosition -= 200;  // Reduced vertical gap for closer spacing
+    }
+
+    // Final checkpoint near the goal with gap
+    Platform* checkpoint3 = new Platform(50, 1000, 350, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    Platform* gap3 = new Platform(400, 1000, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* checkpoint3Right = new Platform(650, 1000, 300, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(checkpoint3);
+    scene->addItem(gap3);
+    scene->addItem(checkpoint3Right);
+    platforms.append(checkpoint3);
+    platforms.append(gap3);
+    platforms.append(checkpoint3Right);
+
+    // Final platform and goal area at the top of the tower
+    Platform* goalPlatform = new Platform(400, 800, 200, 20, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(goalPlatform);
+    platforms.append(goalPlatform);
+
+    // Final enemy guarding the goal
+    Enemy* finalEnemy = new Enemy();
+    finalEnemy->setPos(450, 750);
+    scene->addItem(finalEnemy);
+    enemies.append(finalEnemy);
+
+    // Create the goal flag
+    int flagWidth = 10;
     int flagHeight = 200;
     goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
     goal->setBrush(Qt::blue);
     goal->setPen(Qt::NoPen);
-
-    // — Position it at the far right, just above the floor (y = 500)
-    int offsetFromRight= 3000;
-    int x = width - flagWidth - offsetFromRight;
-    int y = 500 - flagHeight;   // use your floor’s Y
-    goal->setPos(x, y);
-
-    // — Add to scene
+    goal->setPos(490, 600);  // Positioned at the top of the tower
     scene->addItem(goal);
 }
-
 
 void Level::setupLevel4() {
     width = 1000;
