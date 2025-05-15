@@ -110,33 +110,28 @@ void Level::createLevel() {
 }
 
 void Level::setupLevel1() {
-    width = 6000;  // Reduced level width to match smaller gap
-    height = 800;  // Increased height for plateau
+    width = 6000;
+    height = 800;
 
     scene->setSceneRect(0, 0, width, height);
 
-    // Create player
     player = new Player();
-    player->setPos(100, 600);  // Flat starting area
+    player->setPos(100, 600);
     scene->addItem(player);
     player->setFocus();
 
-    // Create main flat ground platform (solid)
     Platform* floor = new Platform(0, 700, 2000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(floor);
     platforms.append(floor);
 
-    // Raised ledge (connected to flat ground)
     Platform* raisedLedge = new Platform(1500, 600, 500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(raisedLedge);
     platforms.append(raisedLedge);
 
-    // Reduced gap that requires jump and dash
     Platform* landingPlatform = new Platform(2400, 700, 1100, 100, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(landingPlatform);
     platforms.append(landingPlatform);
 
-    // Plateau with climbable pass-through platforms
     Platform* plateauBase = new Platform(3500, 300, 1500, 500, Platform::PlatformType::Solid, Qt::darkGreen);
     scene->addItem(plateauBase);
     platforms.append(plateauBase);
@@ -145,7 +140,6 @@ void Level::setupLevel1() {
     scene->addItem(plateauEnd);
     platforms.append(plateauEnd);
 
-    // Pass-through platforms to climb the plateau
     Platform* climb1 = new Platform(2900, 550, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
     Platform* climb2 = new Platform(3050, 500, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
     Platform* climb3 = new Platform(3200, 450, 150, 20, Platform::PlatformType::Passthrough, Qt::yellow);
@@ -160,18 +154,120 @@ void Level::setupLevel1() {
     platforms.append(climb3);
     platforms.append(climb4);
 
-    // Enemy guarding the goal
     Enemy* enemy = new Enemy();
-    enemy->setPos(5500, 550);  // Positioned in front of the goal
+    enemy->setPos(5500, 550);
     scene->addItem(enemy);
     enemies.append(enemy);
 
-    // Clear previous goal if exists
     if (goal) {
         scene->removeItem(goal);
         delete goal;
         goal = nullptr;
     }
+
+    int flagWidth = 10;
+    int flagHeight = 200;
+    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
+    goal->setBrush(Qt::blue);
+    goal->setPen(Qt::NoPen);
+
+
+    int x = 5800;
+    int y = 700 - flagHeight;
+    goal->setPos(x, y);
+    scene->addItem(goal);
+}
+
+void Level::setupLevel2() {
+    width = 8000;  // Increased level width for complexity
+    height = 1000; // Increased height for climbing challenges
+
+    scene->setSceneRect(0, 0, width, height);
+
+    // Create player at the starting position
+    player = new Player();
+    player->setPos(100, 800);  // Flat starting area
+    scene->addItem(player);
+    player->setFocus();
+
+    // Starting flat ground platform (solid)
+    Platform* floor = new Platform(0, 900, 1500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(floor);
+    platforms.append(floor);
+
+    // Stationary enemy near the start
+    Enemy* startEnemy = new Enemy();
+    startEnemy->setPos(1300, 850);  // Positioned on the starting flat ground
+    scene->addItem(startEnemy);
+    enemies.append(startEnemy);
+
+    // First challenge: gap with moving enemy on the other side
+    Platform* gapLanding = new Platform(2000, 900, 800, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(gapLanding);
+    platforms.append(gapLanding);
+
+    Enemy* gapEnemy = new Enemy();
+    gapEnemy->setPos(2200, 850);  // Moving back and forth on the landing platform
+    scene->addItem(gapEnemy);
+    enemies.append(gapEnemy);
+
+    // Climbing section: stacked pass-through platforms with enemies
+    Platform* climb1 = new Platform(2700, 750, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb2 = new Platform(2900, 650, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb3 = new Platform(3100, 550, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+    Platform* climb4 = new Platform(3300, 450, 200, 20, Platform::PlatformType::Passthrough, Qt::yellow);
+
+    scene->addItem(climb1);
+    scene->addItem(climb2);
+    scene->addItem(climb3);
+    scene->addItem(climb4);
+    platforms.append(climb1);
+    platforms.append(climb2);
+    platforms.append(climb3);
+    platforms.append(climb4);
+
+    // Enemies on climbing platforms
+    Enemy* climbEnemy1 = new Enemy();
+    climbEnemy1->setPos(2800, 700);  // Moving back and forth
+    scene->addItem(climbEnemy1);
+    enemies.append(climbEnemy1);
+
+    Enemy* climbEnemy2 = new Enemy();
+    climbEnemy2->setPos(3000, 600);  // Moving back and forth
+    scene->addItem(climbEnemy2);
+    enemies.append(climbEnemy2);
+
+    // Mid-level plateau for recovery
+    Platform* midPlateau = new Platform(3500, 400, 1000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(midPlateau);
+    platforms.append(midPlateau);
+
+    // Attack recoil challenge: gap with stationary enemies
+    Platform* recoilStart = new Platform(4700, 900, 300, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(recoilStart);
+    platforms.append(recoilStart);
+
+    for (int i = 0; i < 4; i++) {
+        Enemy* recoilEnemy = new Enemy();
+        recoilEnemy->setPos(5100 + i * 200, 900);  // Evenly spaced stationary enemies
+        scene->addItem(recoilEnemy);
+        enemies.append(recoilEnemy);
+    }
+
+    Platform* recoilEnd = new Platform(6000, 900, 1000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(recoilEnd);
+    platforms.append(recoilEnd);
+
+    // Final platform and goal area
+    Platform* finalPlatform = new Platform(7000, 900, 1000, 100, Platform::PlatformType::Solid, Qt::darkGreen);
+    scene->addItem(finalPlatform);
+    platforms.append(finalPlatform);
+
+    // Final enemy guarding the goal
+    Enemy* finalEnemy = new Enemy();
+    finalEnemy->setPos(7400, 850);
+    scene->addItem(finalEnemy);
+    enemies.append(finalEnemy);
 
     // Create the goal flag
     int flagWidth = 10;
@@ -179,91 +275,9 @@ void Level::setupLevel1() {
     goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
     goal->setBrush(Qt::blue);
     goal->setPen(Qt::NoPen);
-
-    // Position the goal at the end of the level, after the enemy
-    int x = 5800;
-    int y = 700 - flagHeight;
-    goal->setPos(x, y);
+    goal->setPos(7800, 700);  // Positioned at the end of the final platform
     scene->addItem(goal);
 }
-void Level::setupLevel2() {
-
-    width = 2500;
-    height = 600;
-
-    scene->setSceneRect(0, 0, width, height);
-
-    // Level 2 - harder layout with more obstacles
-
-    // Create player
-    player = new Player();
-    player->setPos(100, 400);
-    scene->addItem(player);
-    player->setFocus();
-
-    // Create main floor platform (solid) but with gaps
-    Platform* floor1 = new Platform(0, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
-    Platform* floor2 = new Platform(750, 500, 600, 100, Platform::PlatformType::Solid, Qt::darkGreen);
-    Platform* floor3 = new Platform(1500, 500, 500, 100, Platform::PlatformType::Solid, Qt::darkGreen);
-
-    scene->addItem(floor1);
-    scene->addItem(floor2);
-    scene->addItem(floor3);
-
-    platforms.append(floor1);
-    platforms.append(floor2);
-    platforms.append(floor3);
-
-    // Add some floating platforms (passthrough)
-    Platform* platform1 = new Platform(200, 350, 150, 20);
-    Platform* platform2 = new Platform(450, 300, 150, 20);
-    Platform* platform3 = new Platform(650, 350, 200, 20);
-    Platform* platform4 = new Platform(950, 300, 150, 20);
-    Platform* platform5 = new Platform(1200, 250, 150, 20);
-    Platform* platform6 = new Platform(1450, 300, 150, 20);
-    Platform* platform7 = new Platform(1700, 350, 150, 20);
-
-    scene->addItem(platform1);
-    scene->addItem(platform2);
-    scene->addItem(platform3);
-    scene->addItem(platform4);
-    scene->addItem(platform5);
-    scene->addItem(platform6);
-    scene->addItem(platform7);
-
-    platforms.append(platform1);
-    platforms.append(platform2);
-    platforms.append(platform3);
-    platforms.append(platform4);
-    platforms.append(platform5);
-    platforms.append(platform6);
-    platforms.append(platform7);
-
-    // TODO: Create obstacles
-    if (goal) {
-        scene->removeItem(goal);
-        delete goal;
-        goal = nullptr;
-    }
-
-    // — Create a new flag
-    int flagWidth  = 10;
-    int flagHeight = 200;
-    goal = new QGraphicsRectItem(0, 0, flagWidth, flagHeight);
-    goal->setBrush(Qt::blue);
-    goal->setPen(Qt::NoPen);
-
-    // — Position it at the far right, just above the floor (y = 500)
-    int offsetFromRight= 600;
-    int x = width - flagWidth - offsetFromRight;
-    int y = 500 - flagHeight;   // use your floor’s Y
-    goal->setPos(x, y);
-
-    // — Add to scene
-    scene->addItem(goal);
-}
-
-
 void Level::setupLevel3() {
     width = 800;
     height = 5000;

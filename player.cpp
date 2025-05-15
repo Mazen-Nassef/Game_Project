@@ -513,6 +513,8 @@ void Player::checkAttackCollision()
             enemy->takeDamage(1);  // Deal 1 damage
             xVelocity = -attackDirectionX * attackLaunchMagnitude;
             yVelocity = -attackDirectionY * attackLaunchMagnitude;
+            canDash = true;
+            setBrush(QBrush(Qt::red));
             continue;
         }
         
@@ -524,6 +526,8 @@ void Player::checkAttackCollision()
             
             // End the attack early
             removeAttack();
+            canDash = true;
+            setBrush(QBrush(Qt::red));
             break;
         }
     }
