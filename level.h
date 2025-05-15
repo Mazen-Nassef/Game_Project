@@ -41,6 +41,8 @@ private:
      QList<Enemy*> enemies;
     QGraphicsRectItem* goal;
     Player* player;
+    QList<QGraphicsTextItem*> texts;
+
     
     // Clear level elements
     void clearLevel();
