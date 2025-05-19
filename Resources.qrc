@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/tilemap">
+        <file>Resources/Jungle Asset Pack/Jungle Asset Pack/jungle tileset/jungle tileset.png</file>
+    </qresource>
+</RCC>

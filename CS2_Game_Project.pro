@@ -18,6 +18,7 @@ SOURCES += \
     player.cpp \
     scoresystem.cpp \
     enemy.cpp \
+    tile_processor.cpp \
     uimanager.cpp
 
 HEADERS += \
@@ -29,6 +30,7 @@ HEADERS += \
     player.h \
     scoresystem.h \
     enemy.h \
+    tile_processor.h \
     uimanager.h
 
 FORMS += \
@@ -38,3 +40,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    Resources.qrc
