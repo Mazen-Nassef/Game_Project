@@ -4,6 +4,7 @@
 #include "uimanager.h"
 #include "level.h"
 #include <QTimer>
+#include <QPixmap>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -42,6 +43,8 @@ void MainWindow::setupGame()
     // Create the view and set the scene
     view = ui->graphicsView;
     view->setScene(scene);
+    QPixmap bg(":/background/Resources/stringstar fields/example.png");
+    scene->setBackgroundBrush(bg);
 
     view->setRenderHint(QPainter::Antialiasing);
     view->setRenderHint(QPainter::SmoothPixmapTransform);

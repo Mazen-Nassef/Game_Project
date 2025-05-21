@@ -2,4 +2,7 @@
     <qresource prefix="/tilemap">
         <file>Resources/Jungle Asset Pack/Jungle Asset Pack/jungle tileset/jungle tileset.png</file>
     </qresource>
+    <qresource prefix="/background">
+        <file>Resources/stringstar fields/example.png</file>
+    </qresource>
 </RCC>
